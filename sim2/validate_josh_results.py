@@ -207,7 +207,7 @@ def check_e7():
     quoted(f"average policy effect of ${E['policy_effect_alerted']['mean']:.3f}$", "F6 (policy effect)")
     quoted(f"overstates by ${100 * (E['rd_relative_to_policy'] - 1):.0f}\\%$", "F6 (RD gap)")
     quoted(f"(${E['treatment_effect_alerted']['mean']:.3f}$)", "F6 (treatment effect)")
-    # Appendix A and the reading of Proposition 3: shape of the policy-effect curve
+    # Appendix A and the reading of Proposition prop:rd: shape of the policy-effect curve
     edges, curve = E["policy_effect_curve"]["bin_edges"], E["policy_effect_curve"]["mean"]
     centre = [(a + b) / 2 for a, b in zip(edges[:-1], edges[1:])]
     peak = min(range(len(curve)), key=lambda i: curve[i])
@@ -217,6 +217,13 @@ def check_e7():
     quoted(f"from ${curve[0]:.2f}$ just above the threshold to ${curve[peak]:.2f}$", "Appendix A (curve)")
     quoted(f"$\\rhat = {centre[peak]:.2f}$", "Appendix A (peak)")
     quoted(f"fades to ${curve[near]:.2f}$ near ${centre[near]:.2f}$ and to about zero above\n${edges[flat]:.2f}$", "Appendix A (tail)")
+    # Appendix A: the curve integrated with weight 1 - 2r is the policy contrast of F1 (Proposition prop:rd)
+    target, term = d["A"]["references"]["S3"]["pc_pi"], E["brier_policy_term"]
+    assert abs(term["mean"] - target["value"]) < 4 * (term["mcse"] + target["mc_se"]), "Brier-scale term from the curve"
+    quoted(with_ci(term), "Appendix A (Brier-scale policy term)")
+    quoted(with_ci(E["rd_constant_effect_brier"]), "Appendix A (constant-effect extrapolation)")
+    quoted(f"$\\Theta = {E['event_rate_policy_term']['mean']:+.4f}$", "Appendix A (event-rate term)")
+    quoted(f"${100 * (E['rd_constant_effect_brier']['mean'] / term['mean'] - 1):.0f}\\%$ too large", "Appendix A (overstatement)")
 
 
 def check_prevalence_estimators():
@@ -268,7 +275,7 @@ def check_e6():
         assert not tagged, "sensitivity runs present without the main E6 run"
         print("  merged_expE6.json not present (needs the credentialed run): skipped")
         return
-    from e6_report import quotes
+    from e6_report import quotes, text_quotes
     d = load("merged_expE6.json")
     check_e6_run("merged_expE6.json", d)
     same_figure("fig7_mimic.pdf")
@@ -285,6 +292,21 @@ def check_e6():
     assert "\\todo{Numbers and Figure~\\ref{fig:mimic}" not in TEX, "Appendix E6 TODO still open after the E6 run"
     for label, text in quotes(d).items():
         quoted(text, f"F7 ({label})")
+    flat = " ".join(TEX.split())
+    for label, text in text_quotes(d, drop or None).items():
+        assert " ".join(text.split()) in flat, f"E6 text ({label}): expected to find {text!r}"
+    runs = {name: load(name) for name in tagged}
+
+    def union(dd):
+        rows = sorted((r for r in dd["A"]["runs"] if r["scenario"] == "deploy_only"), key=lambda r: r["rep"])
+        return [r["union_pi"] for r in rows]
+    for name in ("merged_expE6_rrr25.json", "merged_expE6_rrr75.json"):
+        if name in runs:       # same draws, other effect size: the union graph cannot see the action
+            other = union(runs[name])
+            assert other == union(d)[:len(other)], f"{name}: union-graph estimate depends on the effect size"
+    for name in ("merged_expE6_rrr75.json", "merged_expE6_alert20.json"):
+        if name in runs:       # F7: with a stronger action or more alerts the real deterioration looks like an improvement
+            assert runs[name]["A"]["summary"]["drift_and_deploy"]["dR_observed"]["mean"] < 0, name
 
 
 def check_e6_open():

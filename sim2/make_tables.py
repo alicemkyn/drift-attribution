@@ -79,7 +79,7 @@ def table_e1():
     lines = ["\\begin{table}[h]", "\\centering\\scriptsize", "\\setlength{\\tabcolsep}{3pt}",
              "\\caption{Keep-or-refit rules under the rate-held threshold (events averted, pp) and harm sensitivity under the fixed "
              "threshold: net events averted when each extra treatment of a patient whose untreated outcome is 0 "
-             "costs $h$ events.}", "\\label{tab:decision-app}",
+             "costs $h$ events.}", "\\label{tab:decision-app}", "\\resizebox{\\columnwidth}{!}{%",
              "\\begin{tabular}{llrrrr}", "\\toprule", "Threshold & Rule & S1 & S2 & S3 & S4\\\\", "\\midrule"]
     for rule, label in rows:
         cells = [fmt(next(t for t in d["table"] if t["threshold_rule"] == "rate" and t["scenario"] == sc
@@ -92,7 +92,7 @@ def table_e1():
                               and x["rule"] == rule and x["harm_per_unnecessary_treatment"] == h)
                          ["net_events_averted_pp"]["mean"], 1) for sc in ("S1", "S2", "S3", "S4")]
             lines.append(f"fixed, $h={h:g}$ & {label} & " + " & ".join(cells) + "\\\\")
-    lines += ["\\bottomrule", "\\end{tabular}", "\\end{table}"]
+    lines += ["\\bottomrule", "\\end{tabular}", "}", "\\end{table}"]
     write("e1_decision_appendix", lines)
 
 
@@ -114,7 +114,7 @@ def table_e3():
              "per column. ``Weighted'' uses $1/P(A{=}0\\mid X)$ from the logged alert rule and response "
              "probabilities; ``estimated weights'' replaces them with a logistic regression of $A$ on $X$, the alert "
              "and their interaction. Last row: mean score minus mean untreated risk for naive refitting.}",
-             "\\label{tab:retrain-app}",
+             "\\label{tab:retrain-app}", "\\resizebox{\\textwidth}{!}{%",
              "\\begin{tabular}{lcccccc}", "\\toprule",
              " & \\multicolumn{3}{c}{Fixed threshold} & \\multicolumn{3}{c}{Rate-held threshold}\\\\",
              "\\cmidrule(lr){2-4}\\cmidrule(lr){5-7}",
@@ -126,7 +126,7 @@ def table_e3():
     lines.append("\\midrule")
     lines.append("Naive refit, calibration & " + " & ".join(fmt(cell(s, "naive", "calibration_in_large")["mean"], 3, sign=True)
                                                            for s in settings) + "\\\\")
-    lines += ["\\bottomrule", "\\end{tabular}", "\\end{table*}"]
+    lines += ["\\bottomrule", "\\end{tabular}", "}", "\\end{table*}"]
     write("e3_retraining", lines)
 
 
@@ -322,8 +322,8 @@ def table_e6(d=None):
     d = d or load("merged_expE6.json")
     if d is None:
         return
-    from e6_report import brier_digits, final_round
-    k = brier_digits(d)
+    from e6_report import brier_digits, events_digits, final_round
+    k, e = brier_digits(d), events_digits(d)
     c, p, A = d["cohort"], d["parameters"], d["A"]
     S, T = A["summary"], A["truth"]
     names = ("deploy_only", "drift_only", "drift_and_deploy")
@@ -354,8 +354,8 @@ def table_e6(d=None):
     fixed, rate = final_round(d, "fixed"), final_round(d, "rate")
     for arm, label in (("keep", "Keep"), ("naive", "Naive refit"), ("untreated", "Refit on $A{=}0$"),
                        ("untreated_ipw", "Refit on $A{=}0$, weighted")):
-        lines.append(f"{label} & {ci_or_value(fixed[arm]['events_averted_pp'])} & "
-                     f"{ci_or_value(rate[arm]['events_averted_pp'])} & \\\\")
+        lines.append(f"{label} & {ci_or_value(fixed[arm]['events_averted_pp'], e)} & "
+                     f"{ci_or_value(rate[arm]['events_averted_pp'], e)} & \\\\")
     lines += ["\\bottomrule", "\\end{tabular}", "\\end{table*}"]
     write("e6_mimic", lines)
 
@@ -368,8 +368,8 @@ def table_e6_sensitivity(runs=None):
     rows = [r for r in rows if r[2] is not None]
     if len(rows) < 2:
         return
-    from e6_report import brier_digits, final_round
-    k = min(brier_digits(d) for _, _, d in rows)
+    from e6_report import brier_digits, events_digits, final_round
+    k, e = min(brier_digits(d) for _, _, d in rows), max(events_digits(d) for _, _, d in rows)
     lines = ["\\begin{table*}[t]", "\\centering\\scriptsize",
              "\\caption{Semi-synthetic MIMIC-IV, sensitivity runs. Deployment-only attribution (policy contrast, its "
              "randomised-arm estimate, the union-graph estimate with oracle policy weights and the monitor's "
@@ -384,8 +384,8 @@ def table_e6_sensitivity(runs=None):
         S, T, r8 = d["A"]["summary"]["deploy_only"], d["A"]["truth"]["deploy_only"], final_round(d)
         lines.append(f"{label} & {fmt(T['pi'], k, sign=True)} & {brier_ci(S['proposed_pi'], k)} & "
                      f"{fmt(S['union_pi']['mean'], k, sign=True)} & "
-                     f"{brier_ci(S['monitor_Ygx'], k)} & {fmt(r8['keep']['events_averted_pp']['mean'], 2)} & "
-                     f"{ci_or_value(r8['naive']['events_averted_pp'])} & {ci_or_value(r8['untreated']['events_averted_pp'])}\\\\")
+                     f"{brier_ci(S['monitor_Ygx'], k)} & {fmt(r8['keep']['events_averted_pp']['mean'], e)} & "
+                     f"{ci_or_value(r8['naive']['events_averted_pp'], e)} & {ci_or_value(r8['untreated']['events_averted_pp'], e)}\\\\")
     lines += ["\\bottomrule", "\\end{tabular}", "}", "\\end{table*}"]
     write("e6_sensitivity", lines)
 

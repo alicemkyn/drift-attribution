@@ -189,58 +189,58 @@
  "mimic_iv": [
   {
    "pool": "early period, held out",
-   "admissions": 69323,
-   "tau": 0.022805847795872077,
-   "alert_rate": 0.09588448278349176,
-   "mean_score_alerted": 0.040590543316635974,
+   "admissions": 138278,
+   "tau": 0.016264213629978,
+   "alert_rate": 0.0986997208521963,
+   "mean_score_alerted": 0.029416473578290626,
    "before": {
-    "brier": 0.010552965327001252,
-    "auroc": 0.7383930833403577,
-    "observed_over_expected": 0.9807429637482139,
-    "calibration_slope": 1.0072993393571563,
-    "event_rate": 0.010876621034865773
+    "brier": 0.008278423749948532,
+    "auroc": 0.746985413730954,
+    "observed_over_expected": 1.037115636740965,
+    "calibration_slope": 1.0481256082339985,
+    "event_rate": 0.00846844762001186
    },
    "after": {
-    "brier": 0.009088603946324061,
-    "auroc": 0.6961409109995114,
-    "observed_over_expected": 0.8298269128610968,
-    "calibration_slope": 0.7898036940879958,
-    "event_rate": 0.009202934091138586
+    "brier": 0.007006630993167114,
+    "auroc": 0.7024290996486593,
+    "observed_over_expected": 0.8658498500161282,
+    "calibration_slope": 0.8282095391898113,
+    "event_rate": 0.007069996673368143
    },
    "change": {
-    "brier": -0.0014643613806771903,
-    "auroc": -0.04225217234084633,
-    "observed_over_expected": -0.15091605088711713,
-    "calibration_slope": -0.21749564526916054,
-    "event_rate": -0.0016736869437271873
+    "brier": -0.0012717927567814178,
+    "auroc": -0.04455631408229466,
+    "observed_over_expected": -0.17126578672483683,
+    "calibration_slope": -0.21991606904418715,
+    "event_rate": -0.0013984509466437173
    }
   },
   {
    "pool": "late period",
-   "admissions": 53647,
-   "tau": 0.022805847795872077,
-   "alert_rate": 0.09314593546703451,
-   "mean_score_alerted": 0.04314874307759244,
+   "admissions": 110093,
+   "tau": 0.016264213629978,
+   "alert_rate": 0.10384856439555648,
+   "mean_score_alerted": 0.03067373873892988,
    "before": {
-    "brier": 0.012840467893842937,
-    "auroc": 0.7409154424088149,
-    "observed_over_expected": 1.2298474081171153,
-    "calibration_slope": 0.9061811507264873,
-    "event_rate": 0.013253304005815796
+    "brier": 0.01018141229634189,
+    "auroc": 0.7230774391003484,
+    "observed_over_expected": 1.2706895781240566,
+    "calibration_slope": 0.9051226685097079,
+    "event_rate": 0.010427547618831351
    },
    "after": {
-    "brier": 0.011196054668016295,
-    "auroc": 0.7018484975278517,
-    "observed_over_expected": 1.0541487435889916,
-    "calibration_slope": 0.742578983312425,
-    "event_rate": 0.011359908289373123
+    "brier": 0.008713983751558158,
+    "auroc": 0.6779340469481894,
+    "observed_over_expected": 1.0731128449401333,
+    "calibration_slope": 0.6975644851174666,
+    "event_rate": 0.008806191129317941
    },
    "change": {
-    "brier": -0.0016444132258266412,
-    "auroc": -0.039066944880963184,
-    "observed_over_expected": -0.17569866452812377,
-    "calibration_slope": -0.1636021674140623,
-    "event_rate": -0.0018933957164426734
+    "brier": -0.0014674285447837318,
+    "auroc": -0.04514339215215901,
+    "observed_over_expected": -0.19757673318392333,
+    "calibration_slope": -0.2075581833922413,
+    "event_rate": -0.0016213564895134099
    }
   }
  ]
