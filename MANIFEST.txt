@@ -26,6 +26,7 @@ figures/fig5_utility.pdf
 figures/fig6_decision.pdf
 figures/fig_attribution_scenarios.pdf
 figures/fig_auroc_vs_utility.pdf
+figures/fig_rd_curve.pdf
 figures/fig_rd_bounds.pdf
 figures/fig_retrain_redeploy.pdf
 figures/merged_expA.json
@@ -73,6 +74,7 @@ sim2/dgp.py
 sim2/e6_fixture.py
 sim2/e6_mimic_cohort.py
 sim2/e6_report.py
+sim2/e6_units.py
 sim2/e6_sepsis_cohort.py
 sim2/exp_AB_robustness.py
 sim2/exp_E1_decision.py

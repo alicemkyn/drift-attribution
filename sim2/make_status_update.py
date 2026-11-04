@@ -25,7 +25,7 @@ from matplotlib.path import Path as MPath
 ROOT = Path(__file__).resolve().parents[1]
 FIG = ROOT / "figures"
 OUT = ROOT / "docs" / "status_update"
-DATE = "28 October 2026"
+DATE = "3 November 2026"
 
 # Reference palette, light surface. Categorical slots 1-3 pass the colour-vision
 # and normal-vision checks for every pair; aqua sits below 3:1 on the surface, so
@@ -54,6 +54,7 @@ plt.rcParams.update({
 
 FIGSIZE = (10, 5.625)                # 2000 x 1125 px at 200 dpi
 CAPTIONS: list[tuple[str, str]] = []
+DRAFT_TODO = (ROOT / "aaai/drift_attribution_aaai.tex").read_text().count("\\todo{")
 
 
 def load(name):
@@ -148,7 +149,7 @@ def mimic_run():
 
 def figure_workflow():
     stand_in = load("e6_open/merged_expE6_sepsis2019_AtoB.json")["cohort"]["admissions"]
-    todo = (ROOT / "aaai/drift_attribution_aaai.tex").read_text().count("\\todo{")
+    todo = DRAFT_TODO
     mimic_d = mimic_run()
     fig = plt.figure(figsize=(13.333, 7.85))
     ax = fig.add_axes([0, 0, 1, 1])
@@ -248,9 +249,11 @@ def figure_workflow():
              (("done", ["Results section written: 6 of", "7 findings, all with error bars"]),
               ("done", ["Existing references checked"]),
               ("missing", ["Finding 7 (real hospital data)", "waits on the MIMIC-IV run"])))
-    items += (("partial", ["Still to write: abstract, intro,", "theory and proofs, related",
-                           "work, responsible use"]),
-              ("partial", ["A few references still to add"]))
+    items += ((("done", ["Abstract, intro, theory and", "proofs, related work and", "responsible use drafted"]),
+               ("partial", ["Next: team review and the", "decisions in NEXT_STEPS"])) if todo == 0 else
+              (("partial", ["Still to write: abstract, intro,", "theory and proofs, related",
+                            "work, responsible use"]),
+               ("partial", ["A few references still to add"])))
     y = y0 + h - 7.2
     for status, lines in items:
         badge(ax, x0 + 1.9, y, status, r=0.8)
@@ -267,7 +270,9 @@ def figure_workflow():
     CAPTIONS.append((
         "01_workflow.png",
         "Every experiment is done, including the run on MIMIC-IV hospital records, which stayed on our own computer "
-        "(only summary numbers left it); what is left is writing." if mimic_d else
+        "(only summary numbers left it); " + ("every section of the draft is written, so what is left is the "
+                                               "team's review." if todo == 0 else "what is left is writing.")
+        if mimic_d else
         "All the simulation work is done; the one missing piece (red) is the MIMIC-IV run, which needs someone "
         "with approved access to the data to run our script on their own computer."))
 
@@ -688,8 +693,10 @@ def mimic_post():
             f"({c['admissions']:,} ward admissions), which ran on our own computer and saved only summary "
             "numbers. On real patients with a simulated alert, standard monitoring again credits the alert's "
             "effect to lower underlying risk, and between 2008-13 and 2014-19 the alert's benefit hid "
-            f"{-pi / exo:.0%} of a real rise in prediction error. What is left is writing the remaining "
-            "sections of the draft.")
+            f"{-pi / exo:.0%} of a real rise in prediction error. "
+            + ("Every section of the draft is written; what is left is the team's review and the open decisions "
+               "in docs/NEXT_STEPS.md." if DRAFT_TODO == 0 else "What is left is writing the remaining sections of "
+               "the draft."))
 
 
 def write_captions():

@@ -2,23 +2,31 @@
 
 State: E1 to E5 and E7 are done and were checked against the manuscript in a
 second pass; the corrections are listed in `docs/JOSH_E1_E7_NOTES.md`. E6 was
-run on 28 October 2026 on MIMIC-IV v3.1 (`sim2/run_e6.sh`, on the machine
-that holds the data); F7, the E6 appendix and the last row of Table
-`tab:prevalence` report it, and the validator passes with the E6 check
-active. Read `docs/JOSH_E1_E7_NOTES.md` first; `docs/E6_MIMIC.md` describes
+run on MIMIC-IV v3.1 (`sim2/run_e6.sh`, on the machine that holds the data)
+on 28 October 2026 and rerun on 3 November with the corrected ward
+definition and whole-pool refits; F7, the E6 appendix and the last row of
+Table `tab:prevalence` report it, and the validator, which now checks every
+MIMIC-IV number in the text, passes with the E6 check active. Read `docs/JOSH_E1_E7_NOTES.md` first; `docs/E6_MIMIC.md` describes
 the E6 design and results.
 
 ## 1. Run E6 on credentialed MIMIC-IV (required; closes task E6)
 
-**Done 28 October 2026.** Download (checksums match), cohort (all acceptance
-checks pass: 180,910 admissions, event rate 1.10% and 1.33%), main and six
-sensitivity runs, report. The report step now also writes the MIMIC-IV part
-of `figures/performance_drop.json`. F7 and the E6 appendix TODOs are replaced
-with the results; `docs/E6_MIMIC.md` ("Results") summarises them. Still to
-do by the person who ran it: confirm that every unit in the cohort step's
-printed ward list is a ward (1.3), and commit and push the result files
-with the manuscript edits (1.5). The steps below stay as the recipe for a
-rerun.
+**Done 28 October, redone 3 November 2026.** Download (checksums match),
+cohort, main and six sensitivity runs, report. Checking the printed ward list
+(1.3) showed that the first cohort (180,910 admissions) had lost Medicine,
+Med/Surg, Neurology, Surgery/Trauma and two intermediate units: the rule
+dropped any unit in which MIMIC-IV v3.1 records an ICU stay, and a handful
+are recorded on general wards. The cohort script now treats a unit as an ICU
+unit only if ICU stays begin there for at least 10% of its admit and transfer
+events, and excludes draws taken during an ICU stay; `sim2/e6_units.py`
+prints the classification of every unit. The corrected cohort has 368,995
+admissions (event rate 0.84% and 1.04%), and every acceptance check passes.
+Update-rule refits now use the whole training pool (`--n-train 0`), as for
+the open stand-in. The report step also writes the MIMIC-IV part of
+`figures/performance_drop.json`. F7 and the E6 appendix report the results;
+`docs/E6_MIMIC.md` ("Results") summarises them. A rerun of the main run with
+6 workers wrote a byte-identical JSON. The steps below stay as the recipe for
+a rerun.
 
 **Where.** Your own machine, with PhysioNet credentialed access to MIMIC-IV.
 
@@ -131,10 +139,10 @@ by the report step are committed; `data/` stays untracked.
   point and falls at realistic event rates, where the monitor books the
   improvement to the outcome mechanism. The low-prevalence run (6.6%, alert
   rate 20%) shows F1 and F4 hold with estimators, not only oracle values (see
-  `JOSH_E1_E7_NOTES.md`). MIMIC-IV settles the empirical side: at its 1.1%
-  event rate the deployment lowers the Brier score (-0.0015) while AUROC falls
-  (0.738 to 0.696) and the score over-predicts (O/E 0.98 to 0.83), and with
-  real drift the alert's benefit hides 72% of a real Brier deterioration
+  `JOSH_E1_E7_NOTES.md`). MIMIC-IV settles the empirical side: at its 0.85%
+  event rate the deployment lowers the Brier score (-0.0013) while AUROC falls
+  (0.747 to 0.702) and the score over-predicts (O/E 1.04 to 0.87), and with
+  real drift the alert's benefit hides 77% of a real Brier deterioration
   (F7). Decide how W1 and W7 say this: report the drop in
   AUROC and calibration alongside the Brier change, move the low-prevalence
   point into the main text, or also attribute a metric that falls at every
@@ -142,38 +150,40 @@ by the report step are committed; `data/` stays untracked.
 - **F3 at realistic event rates (from MIMIC-IV).** The synthetic operating
   point makes naive refitting collapse and oscillate; on MIMIC-IV (1% events,
   the action prevents half of the events among acted-upon alerts) naive
-  refitting averts a sixth fewer events than refitting on untreated patients
-  and never oscillates, and the gap grows with the effect (Table
-  `tab:mimic-sens`). F3 and the limitations now say so. Decide whether the
+  refitting averts a sixth fewer events than refitting on untreated patients,
+  oscillates only in damped form with the strongest action, and the gap grows
+  with the effect (Table `tab:mimic-sens`). F3 and the limitations now say so. Decide whether the
   main text should lead F3 with the mechanism rather than the size of the loss.
 - **The covariate/outcome split of exogenous change (from MIMIC-IV).** The
   policy term and the total exogenous change are differences of mean losses
   and are recovered in every MIMIC-IV run; the split needs a density ratio
-  between the periods and was too variable to interpret (single-run SD 0.0037
-  against a total of 0.0023; up to +-0.08 with admission-year periods or
-  2020-2022). Section 4 and the limitations now say so. Decide whether the
+  between the periods and was too variable to interpret (single-run SDs 0.0018
+  and 0.0019 against a total of 0.0019; up to +-0.03 with admission-year
+  periods or 2020-2022). Section 4 and the limitations now say so. Decide whether the
   decomposition's headline output should be the policy term and the total,
   with the split as a secondary, uncertain quantity.
 - **Size of the randomised arm (from MIMIC-IV).** At a 1% event rate a 30% arm
-  among 69,000 admissions gives a single-run SD half the policy term (as large
-  as the term when the action prevents a quarter of events). The responsible
+  among 138,000 admissions gives a single-run SD two fifths of the policy term
+  (three quarters of it when the action prevents a quarter of events). The responsible
   use statement now says so. A patient-level bootstrap on MIMIC-IV (as E7 does
   for the simulations) would give the analyst's coverage; not run yet.
-- **Weighted refit at low event rates (from MIMIC-IV).** It averts fewer
-  events than the unweighted refit on untreated patients in every rate-held
-  run and six of seven fixed-threshold runs, with about 100 events per
-  training sample. Decide whether the logging recommendation should still
-  present weighting as the default correction.
+- **Weighted refit at low event rates (from MIMIC-IV).** With whole-pool
+  refits it is within 0.013 points of the unweighted refit on untreated
+  patients in every run (above it in five of seven fixed-threshold runs); the
+  deficit of the first run came from refitting on 8,000 admissions. Weighting
+  is not needed at this event rate but costs nothing; keep it as the default
+  correction unless the team prefers the simpler unweighted refit.
 - **E1 headline rule.** The task rule (refit when the exogenous share exceeds
   one half) refits needlessly under pure covariate shift. The outcome-share
   rule has zero regret in S1 to S4 at the calibrated point; at 6.6% prevalence
   it loses 0.55 points in S4, where the outcome share sits at 0.52, next to the
   cut-off. Refitting on untreated patients has zero worst-case regret at both
   operating points. Decide which rule the paper leads with.
-- **Logging requirements** (Section 5): add alert exposure and either the
-  clinician-response probabilities or enough to model them; with estimated
-  propensities the weighted refit of E3 is within 0.01 points of the logged
-  version.
+- **Logging requirements** (Section 5): done 3 November. The paragraph now
+  lists the assignment for a randomised arm, site identities and rollout
+  dates, and the clinician-response probabilities or enough to model them
+  (with estimated propensities the weighted refit of E3 is within 0.01 points
+  of the logged version).
 - **Identification table, site stepped wedge, prospective contrast ("No").**
   In E5 the crossover difference in differences minus the DiD-anchored
   deployment-caused term recovers the prospective contrast within 1.4% in all
@@ -181,11 +191,16 @@ by the report step are committed; `data/` stays untracked.
   covariate-adjusted before/after comparison: it holds only without
   outcome-mechanism drift, which E5 does not simulate. Keep "No" or qualify it.
 - **Threshold-discontinuity appendix.** Appendix A now reports the experiment
-  from `merged_expE7.json`, part E, and Proposition 3 is restated: it separates
-  the alert's effect on the event rate from the Brier-scale policy term and
+  from `merged_expE7.json`, part E, and the threshold proposition (`prop:rd`,
+  now Proposition 4) is restated: it separates the alert's effect on the
+  event rate from the Brier-scale policy term and
   says which monotone direction gives which bound. The simulated curve is
-  hump-shaped, so neither condition holds there, and the text says so. Still
-  open: a figure of the effect curve and the Brier-scale term computed from it.
+  hump-shaped, so neither condition holds there, and the text says so. Done 3
+  November: Figure `fig:rd` (`figures/fig_rd_curve.pdf`, from part E, which
+  now also stores bin masses and the Brier-scale terms). Integrated with
+  weight 1 - 2r the curve gives +0.0269, the policy contrast of F1 (the
+  validator checks this); the local jump extrapolated as a constant effect
+  gives +0.0461, 71% too large.
 
 ## 3. Reference checks (L2/L3)
 

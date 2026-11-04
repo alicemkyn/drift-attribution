@@ -54,7 +54,13 @@ Checked on 5 October 2026 by rerunning every simulation command above (all but
 the E6 rows) in a clean copy
 (about 30 minutes in total): every file reproduces, with numeric differences of
 at most 2e-10 (floating-point rounding in the solvers), and the figures and
-tables rebuilt from the rerun are byte-identical to the committed ones. The
+tables rebuilt from the rerun are byte-identical to the committed ones.
+Rechecked on 3 November 2026 on macOS (Apple silicon, Python 3.10, the
+pinned requirements) from a clean copy of the committed tree: every
+simulation file reproduces with numeric differences of at most 4e-12, and
+the rebuilt figures and tables are again byte-identical. The MIMIC-IV main
+run does not depend on the worker count (rerun with 6 workers, it wrote a
+byte-identical JSON). The
 `open_stand_in` and `mimic_iv` parts of `performance_drop.json` are computed
 only where `data/e6_sepsis_cohort.npz` and `data/e6_cohort.npz` (built from
 PhysioNet data, not in git) are present; elsewhere the script carries them
@@ -64,7 +70,7 @@ part).
 ## Figures and tables
 
 ```sh
-python3 sim2/make_figures2.py        # all main-text figures (1 to 6; copies Figure 7 if the MIMIC-IV run exists)
+python3 sim2/make_figures2.py        # main-text figures 1 to 6 and the Appendix A effect curve; copies Figure 7 if the MIMIC-IV run exists
 python3 sim2/make_tables.py          # every generated table in aaai/tables/
 python3 sim2/make_status_update.py   # status figures and captions for the team (docs/status_update/)
 python3 sim2/validate_josh_results.py

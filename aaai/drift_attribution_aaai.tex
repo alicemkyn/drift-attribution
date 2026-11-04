@@ -40,37 +40,35 @@
 \maketitle
 
 \begin{abstract}
-\todo{Write last. One paragraph: (1) monitoring detects a change in a deployed
-clinical model's performance but does not explain it; (2) attribution methods
-decompose a performance change into distribution-shift mechanisms with a
-cooperative game whose coalition values switch mechanisms between the two
-periods; (3) once the model is deployed and acted upon, the alert policy has no
-counterpart before deployment: each coalition value is a domain-adaptation
-problem with the pre-deployment period as source, absolute continuity fails or
-nearly fails where only the alert triggers treatment, so the game is not
-identified from pre-deployment data or not usefully estimable, and its
-estimator can fail silently with a bias that does not shrink with sample size;
-(4) we order the model-mediated mechanism last
-(an asymmetric Shapley value), so that its share is a policy contrast,
-identified by a randomised unalerted arm (a holdout set in the sense of Liley et al.); when deployment also
-moves the patient mix, the arm cannot separate that shift from exogenous change,
-which a site-level stepped wedge with random rollout order can; (5) in
-simulation the standard decomposition books the alert's
-success to outcome-mechanism shift and reverses the keep-or-refit decision,
-while the policy-contrast decomposition recovers its own estimand; on
-semi-synthetic MIMIC-IV ward admissions (real covariates, outcomes and
-temporal drift, simulated alert) the monitor books the alert's effect to the
-outcome mechanism as an apparent improvement that hides most of a real
-deterioration, and a randomised arm recovers it.}
+Monitoring tells a hospital that a deployed clinical model's performance has
+changed, but not why. Attribution methods decompose such a change into
+distribution-shift mechanisms with a cooperative game whose coalition values
+switch mechanisms between the two periods. Once the model is deployed and
+acted upon, however, the alert policy is one of the mechanisms, and it has no
+counterpart before deployment. Each coalition value becomes a
+domain-adaptation problem with the pre-deployment period as source; where
+only the alert triggers treatment, absolute continuity fails or nearly fails,
+so the game is not identified from pre-deployment data or not usefully
+estimable, and its estimator can fail silently, with a bias that does not
+shrink with sample size. We order the model-mediated mechanism last, an
+asymmetric Shapley value, so that its share is a policy contrast, identified
+by a randomised unalerted arm, the holdout set of earlier work on model
+updating. When deployment also moves the patient mix, the arm cannot separate
+that shift from exogenous change; a site-level stepped wedge with random
+rollout order can. In simulation, the standard decomposition books the
+alert's success to a shift in the outcome mechanism and reverses the
+keep-or-refit decision, while the policy-contrast decomposition recovers its
+own estimand. On semi-synthetic MIMIC-IV ward admissions, with real
+covariates, outcomes and temporal drift and a simulated alert, the monitor
+reads the alert's effect as an improvement of the outcome mechanism that hides
+most of a real deterioration, and the randomised arm recovers it.
 \end{abstract}
 
 %==============================================================================
 \section{Introduction}
 \label{sec:intro}
 
-\todo{Four paragraphs, about one page.}
-
-\paragraph{P1: the monitoring gap.} After deployment, a clinical prediction
+After deployment, a clinical prediction
 model's measured performance changes. Monitoring reports that it changed, not
 why. The change can come from three mechanisms that demand different
 responses: the patient population changed (covariate shift), the outcome
@@ -85,16 +83,16 @@ discrimination at every event rate we simulate and on MIMIC-IV ward admissions
 (F7), while the Brier score rises or falls with the event rate
 (Appendix~\ref{app:robustness}).
 
-\paragraph{P2: attribution exists and is solved for the exogenous case.}
 \citet{zhang2023attributing} formulate performance-change
 attribution as a cooperative game whose players are causal mechanisms and
 quantify each mechanism's contribution as its Shapley value; \citet{budhathoki2021rootcauses} attribute distribution change to individual
 mechanisms; \citet{cai2023disde} decompose a drop into $Y|X$ and $X$
 terms; \citet{gordaliza2025causal} carry the framework into
-medical imaging. \emph{We do not claim that nobody decomposes drift into
-causal components.}
+medical imaging. Decomposing drift into causal components is therefore
+established; what we study is the case in which the audited model is itself
+one of the mechanisms.
 
-\paragraph{P3: deployment feedback breaks identification.} The game values a
+The game values a
 set of mechanisms by the performance that would have been observed had only
 that set changed between the two periods. Under deployment feedback one
 mechanism, the action policy, is induced by the audited model and has no
@@ -125,7 +123,7 @@ literature studies retraining under such feedback~\citep{perdomo2020performative
 kabra2024limitations, lee2026partially}. None of this work decomposes an
 observed performance change into the contributions of its mechanisms.
 
-\paragraph{P4: contributions.} We make three contributions.
+We make three contributions.
 (i)~\emph{Non-identification of the attribution game}
 (Section~\ref{sec:break}). The attribution game inherits the
 absolute-continuity condition under which \citet{boeken2024evaluating}
@@ -232,9 +230,6 @@ ratio of the changed mechanisms.
 \section{Why the game breaks under deployment feedback}
 \label{sec:break}
 
-\todo{Core of the paper. Two propositions, each with a short proof in the
-appendix. Keep the main text to one page.}
-
 \begin{assumption}[Independent switchability]
 \label{ass:switch}
 For every $S \subseteq \mathcal{M}$, $P_S$ is a well-defined distribution and
@@ -269,10 +264,17 @@ does not rescue the game: the failure is positivity, not graph coverage. The
 counterfactual ``only the policy changed'' asks how the pre-deployment outcome
 mechanism would have responded to actions standard care never took; no
 pre-deployment sample answers it, and post-deployment samples answer it only
-for the post-deployment mechanism. \todo{Remark: performativity enters a second time in the update
-step, since $R_{P_S}(f)$ depends on $f$ through $P_S$ as well as through the
-loss; any update derived from the attribution changes the environment the
-attribution was computed in (Section~\ref{sec:estimand}).}
+for the post-deployment mechanism.
+
+\noindent\emph{Remark.} Performativity enters a second time when the
+attribution is acted on. $R_{P_S}(f)$ depends on $f$ through the loss and,
+through the alert policy $\pi_1(a \mid x, f(x))$, through $P_S$ itself. An
+update $f \to f'$ chosen from the attribution therefore changes the
+environment in which the attribution was computed: $f'$ alerts other patients,
+the treated set and with it $P(Y \mid X)$ move, and the next period's
+attribution is a different game. A randomised arm kept after the update
+identifies the new policy contrast (Section~\ref{sec:estimand}); Experiment C
+(F3) shows what the feedback does to an update that ignores it.
 
 \begin{proposition}[Marginal attribution misattributes performative success]
 \label{prop:misattr}
@@ -303,14 +305,31 @@ reason a monitoring team would retrain.
 \section{A decomposition with the model as a policy}
 \label{sec:estimand}
 
-\todo{About two pages. Write the estimand in prediction-under-interventions
-language~\citep{keogh2024prediction, luijken2024estimands}.}
-
 \paragraph{Decision endpoint.} The quantity that matters for the update
 decision is not $\Delta R$ but the change in policy value
 $V_e(\pi) = \E_e[Y(\pi)]$ (or net benefit at threshold $\tau$,
 $\mathrm{NB}_e(\tau)$~\citep{vickers2006decision}). A model can lose
 discrimination while improving outcomes; that is the premise.
+
+\paragraph{Estimand.} In the terms of prediction under
+interventions~\citep{keogh2024prediction, luijken2024estimands}, each term
+below is a counterfactual performance measure of the fixed score $f$: its
+expected loss against the outcome under a stated treatment policy, in a stated
+environment. Write $Y(\pi)$ for the outcome a patient would have under policy
+$\pi$ and $R_e(f; \pi) = \E_e[\ell(f(X), Y(\pi))]$, where $\pi_0$ is standard
+care and $\pi_1$ the alert policy, threshold rule and clinicians' response
+included, so an alert that is not acted upon is part of $\pi_1$ rather than a
+deviation from it. Routine data give $R_{e_0}(f; \pi_0)$ and
+$R_{e_1}(f; \pi_1)$, whose difference is $\Delta R$. Following
+\citet{luijken2024estimands}, the estimand of the policy term fixes the
+population (post-deployment patients at their prediction times), the
+strategies ($\pi_1$ against $\pi_0$), the outcome and horizon (deterioration
+within 12 hours) and the summary (a difference in expected loss; in policy
+value for the decision endpoint). When deployment also moves the patient mix
+(F5), the population becomes part of the strategy: the prospective contrast
+keeps the post-deployment population, while the retrospective contrast, which
+undoes deployment, compares $R_{e_1}(f; \pi_1)$ with the risk of $f$ in the
+population that standard care would have seen.
 
 \paragraph{Decomposition.} Write the observed change as
 \begin{equation}
@@ -344,17 +363,38 @@ sensitivity analysis, not a categorical label.
 \section{Identification}
 \label{sec:ident}
 
-\todo{About two pages.}
-
 \paragraph{Non-identification from routine data.} From observational
 post-deployment data alone, $\Delta_\pi$ is not identified: improvement after
 deployment is consistent with the model-triggered action, a concurrent quality
 initiative, a change in treatment availability, or an unmeasured population
-change. \todo{State as a proposition with a two-line non-identifiability
-example.}
+change.
+
+\begin{proposition}[Routine data do not identify the policy term]
+\label{prop:nonid}
+Suppose the analyst observes $(X, Y)$ before deployment and $(X, \rhat, Y)$
+after it, and every post-deployment patient is exposed to $\pi_1$. Then
+$\Delta_\pi$ is not a functional of the observed distributions: two models
+that generate the same observed distributions can give
+$\Delta_\pi = \Delta R$ and $\Delta_\pi = 0$.
+\end{proposition}
+
+\noindent\emph{Example.} Let the alert lower the event probability of the
+patients it flags by $\delta(x)$ and change nothing else, so
+$\Delta_\pi = \Delta R$. Now let the alert do nothing while a quality
+initiative launched with it lowers the same patients' risk by the same
+$\delta(x)$: the two models give the same $P_{e_0}(X, Y)$ and
+$P_{e_1}(X, \rhat, Y)$, and now $\Delta_\pi = 0$. Logging the action does not settle it without assumptions:
+it identifies $\Delta_\pi$ when the logged covariates capture the treatment
+decision and standard care's response probabilities are known (the oracle row
+of Table~\ref{tab:information}), and a randomised unalerted arm identifies it
+by design.
 
 \paragraph{Logging requirements.} Risk score, alert exposure, acknowledgement,
-action, timing, outcome.
+action, timing and outcome for every patient; the assignment for a randomised
+arm; site identities and rollout dates for a site design; and, for the
+weighted refit of Experiment C, the clinicians' response probabilities or
+enough to model them (with estimated probabilities its events averted change
+by at most $0.01$ points; Appendix~\ref{app:retrain}).
 
 \paragraph{Sources of identifying variation, strongest first.}
 (1) Patient-level randomisation of the alert (an unalerted holdout arm):
@@ -640,9 +680,9 @@ heterogeneous effects and a misspecified score class, which shows that the
 weighting is what removes the dependence on the current policy.
 Every action-log correction assumes the logged covariates capture the
 clinician's treatment decision. How much naive refitting loses depends on how
-many events the action prevents: at the $1\%$ event rate of the MIMIC-IV
-cohort it averts a sixth fewer events than refitting on untreated patients and
-does not oscillate, and weighting the untreated patients does not help (F7).
+many events the action prevents: at the MIMIC-IV cohort's event rate, near
+$1\%$, it averts a sixth fewer events than refitting on untreated patients and
+oscillates only in damped form, and weighting changes little (F7).
 
 \input{tables/e1_decision}
 
@@ -782,12 +822,12 @@ and bands are 95\% bootstrap intervals over replicates.}\label{fig:mimic}\end{fi
 \paragraph{F7: semi-synthetic MIMIC-IV (Figure~\ref{fig:mimic}).} To check
 that the misattribution does not depend on the synthetic covariate and
 outcome model, we repeat Experiments A and C on a ward-deterioration cohort
-from MIMIC-IV~\citep{johnson2023mimic}: $180{,}910$ admissions of $89{,}340$
-adult ward patients. The experiment is semi-synthetic.
+from MIMIC-IV~\citep{johnson2023mimic}: $368{,}995$ admissions of
+$155{,}852$ adult ward patients. The experiment is semi-synthetic.
 Real: the covariates (demographics, admission type, time since admission and
 eleven routine blood tests), the outcome under historical care (ICU admission
-or in-hospital death within 12 hours; $1.1\%$ of admissions before deployment
-and $1.3\%$ after) and the period (2008--2013 before
+or in-hospital death within 12 hours; $0.84\%$ of admissions before
+deployment and $1.04\%$ after) and the period (2008--2013 before
 deployment, 2014--2019 after). Simulated: the deployment of a logistic score
 fitted to part of the early period, a $10\%$ alert rate, clinician response to
 alerts (probability $0.85$), the effect of the alert-triggered action (it
@@ -797,45 +837,48 @@ none), a $30\%$ randomised unalerted arm, and the refit-and-redeploy loop
 alert-triggered action, so the union-graph estimator faces the
 $\varepsilon = 0$ failure of F2. Because the simulated action only prevents
 events, the policy term is known exactly for the finite cohort. At this event
-rate alerted patients have a mean predicted risk of $0.04$, far below $0.5$,
+rate alerted patients have a mean predicted risk of $0.03$, far below $0.5$,
 where preventing an event lowers the Brier score (the derivative of
 $\E[(r - Y)^2]$ in $P(Y{=}1)$ is $1 - 2r$); the policy term is therefore
 negative, and a monitor books an apparent improvement, not a drop, to the
 outcome mechanism, as in the low-prevalence synthetic runs of
 Table~\ref{tab:prevalence}.
 
-With deployment only, the policy contrast is $-0.00146$, and the monitor books
-$-0.00147$ [$-0.00154$, $-0.00140$] to $P(Y \mid X)$ and nothing to $P(X)$,
-while observed AUROC changes by $-0.042$ and the score over-predicts (observed
-over expected events fall from $0.98$ to $0.83$). The randomised arm estimates
-$-0.00144$ [$-0.00155$, $-0.00134$], but at this event rate one analyst's
-estimate is imprecise: its single-run SD, $0.0008$ with about $69{,}000$
-post-deployment admissions, is half the term. The union-graph estimator with
-oracle policy weights returns $-0.00247$ [$-0.00250$, $-0.00245$], and,
-replicate by replicate, the same value whether the action prevents $25\%$,
-$50\%$ or $75\%$ of events (Table~\ref{tab:mimic-sens}): with no treated
-pre-deployment patient it cannot see the action. Between the periods the
-Brier score rises by $+0.00229$ under historical care. With the alert deployed
-the observed change is only $+0.00062$, because the policy contrast,
-$-0.00164$, hides most of the deterioration; with a stronger action or a
-$20\%$ alert rate the observed change turns negative. The randomised arm
-estimates $-0.00159$ [$-0.00173$, $-0.00145$] and the exogenous change
-$+0.00220$ [$+0.00206$, $+0.00235$], while the monitor assigns
-$-0.00373$ [$-0.00421$, $-0.00327$], the alert's effect included, to
+With deployment only, the policy contrast is $-0.00127$, and the monitor books
+$-0.00128$ [$-0.00133$, $-0.00123$] to $P(Y \mid X)$ and nothing to $P(X)$,
+while observed AUROC changes by $-0.044$ and the score over-predicts (observed
+over expected events fall from $1.04$ to $0.87$). The randomised arm estimates
+$-0.00131$ [$-0.00138$, $-0.00124$]; one analyst's estimate has a single-run
+SD of $0.0005$ with about $138{,}000$ post-deployment admissions, two fifths
+of the term. The union-graph estimator with oracle policy weights returns
+$-0.00215$ [$-0.00217$, $-0.00214$], and, replicate by replicate, the same
+value whether the action prevents $25\%$, $50\%$ or $75\%$ of events
+(Table~\ref{tab:mimic-sens}): with no treated pre-deployment patient it
+cannot see the action. Between the periods the Brier score rises by
+$+0.00190$ under historical care. With the alert deployed the observed change
+is only $+0.00039$, because the policy contrast, $-0.00147$, hides $77\%$ of
+the deterioration; with a stronger action or a $20\%$ alert rate the observed
+change turns negative. The randomised arm estimates
+$-0.00154$ [$-0.00162$, $-0.00146$] and the exogenous change
+$+0.00193$ [$+0.00186$, $+0.00201$], while the monitor assigns
+$-0.00244$ [$-0.00272$, $-0.00216$], the alert's effect included, to
 $P(Y \mid X)$.
-Under the fixed threshold, events averted at round eight are $0.17$ points
-when the score is kept, $0.18$ [$0.17$, $0.19$] after naive refitting,
-$0.22$ [$0.21$, $0.23$] after refitting on $A=0$ and $0.20$ [$0.19$, $0.21$] after
-the weighted refit. Every refit recalibrates the score to the late period, in
-which the original score under-predicts; the naive refit also learns the
-prevented events, flags $10.4\%$ of patients against $14.1\%$ after
-refitting on untreated patients, and averts a sixth fewer events. That loss
-grows with the action's effect, but no MIMIC-IV setting reproduces the
-collapse and oscillation of F3: at an event rate near $1\%$ the action
-prevents few training events. Holding the alert rate keeps every rule within
-$0.01$ points of keeping the score (Appendix~\ref{app:mimic}). As in F3, the
-dashboard ranks the rules in reverse: observed AUROC is highest for the kept
-score ($0.708$), which averts the fewest events.
+Under the fixed threshold, events averted at round eight are $0.154$ points
+when the score is kept, $0.148$ [$0.145$, $0.152$] after naive refitting,
+$0.177$ [$0.173$, $0.181$] after refitting on $A=0$ and
+$0.183$ [$0.178$, $0.187$] after the weighted refit. Every refit recalibrates
+the score to the late period, in which the original score under-predicts
+(observed over expected $1.27$); the naive refit also learns the prevented
+events and flags $10.7\%$ of patients against $15.4\%$ after refitting on
+untreated patients, so it averts a sixth fewer events. That loss grows with
+the action's effect, and with the strongest action the naive refit alternates
+between rounds, a damped form of the cycle of F3; no MIMIC-IV run reproduces
+its collapse, because at an event rate near $1\%$ the action prevents few
+training events. Holding the alert rate removes the gap between the two
+refits, and every refit then averts about $0.01$ points fewer than the kept
+score (Appendix~\ref{app:mimic}). As in F3, the dashboard ranks the rules in
+reverse: observed AUROC is highest for the kept score ($0.687$) and lowest for
+the refits on untreated patients, which avert the most events.
 
 
 \section{Related work}
@@ -917,9 +960,6 @@ its share of a monitored performance change.
 \section{Limitations and responsible-use statement}
 \label{sec:responsible}
 
-\todo{Required by the workshop; a missing statement is grounds for desk
-rejection. Half a page.}
-
 \paragraph{Limitations.} Results are theoretical and synthetic, or
 semi-synthetic where MIMIC-IV covariates, outcomes and temporal drift are used
 with a simulated deployment; no real deployment logs are analysed. In the
@@ -954,8 +994,9 @@ randomised unalerted arm withholds a possibly beneficial alert from some
 patients; its size trades that cost against the precision of the attribution,
 a trade-off \citet{haidarwehbe2025holdout} analyse for model updating. At
 ward-deterioration event rates the trade-off is steep: on MIMIC-IV a $30\%$
-arm among about $69{,}000$ admissions estimates the policy term with a
-single-run SD half the term's size. The method requires
+arm among about $138{,}000$ admissions estimates the policy term with a
+single-run SD two fifths of the term's size, and three quarters of it when
+the action prevents a quarter of events. The method requires
 logging of alert exposure and action, which has privacy and workflow
 implications that should be governed under existing post-market surveillance
 frameworks~\citep{gonzalez2024regulating}. Nothing here should be read as
@@ -985,8 +1026,26 @@ $\rhat = 0.64$, because a fixed logit effect removes more probability at
 higher baseline risk, then fades to $-0.07$ near $0.85$ and to about zero above
 $0.87$, because standard care already treats most high-score patients. Neither
 condition of Proposition~\ref{prop:rd} holds, and the local jump overstates the
-average effect by $14\%$. \todo{Figure of the effect curve; Brier-scale policy
-term computed from the curve.}
+average effect by $14\%$.
+
+Figure~\ref{fig:rd} shows the curve and its Brier-scale weighting.
+Integrated against the score distribution, the curve gives the policy's effect
+on the event rate, $\Theta = -0.1150$, and with weight $1 - 2r$ the
+Brier-scale policy term, $+0.0269$ [$+0.0269$, $+0.0270$], the policy contrast
+of F1. Extrapolating the local jump as a constant effect
+(Proposition~\ref{prop:rd}(a)) gives $+0.0461$ [$+0.0452$, $+0.0470$],
+$71\%$ too large: the weight $1 - 2r$ is largest in magnitude at high scores,
+where the effect has faded.
+
+\begin{figure*}[t]\centering\includegraphics[width=\textwidth]{figures/fig_rd_curve.pdf}
+\caption{Threshold-discontinuity experiment, S3 operating point, 40
+independent replicates of $80{,}000$ post-deployment patients. Left: the alert
+policy's effect on the event probability by score bin (95\% bootstrap bands
+over replicates, narrower than the line), its average among alerted patients,
+and the local jump at the threshold. Right: each bin's contribution
+$(1 - 2r)\,\theta(r)\,dF(r)$ to the Brier-scale policy term; the bins sum to
+the policy term, while a constant effect equal to the local jump would give the
+second value shown.}\label{fig:rd}\end{figure*}
 
 \section{Robustness of Experiments A and B}
 \label{app:robustness}
@@ -1016,8 +1075,8 @@ whole change to $P(Y \mid X)$. F1 survives at every prevalence, but at
 realistic ward-deterioration prevalence a successful alert shows up as an
 apparent improvement of the outcome mechanism, not as a drop. The MIMIC-IV
 cohort (last row of Table~\ref{tab:prevalence}) shows this on real covariates
-and outcomes: at an event rate of $1.1\%$ the deployment lowers the Brier
-score by $0.0015$ while AUROC falls from $0.738$ to $0.696$, and the monitor
+and outcomes: at an event rate of $0.85\%$ the deployment lowers the Brier
+score by $0.0013$ while AUROC falls from $0.747$ to $0.702$, and the monitor
 books the whole change to $P(Y \mid X)$.
 
 \input{tables/prevalence}
@@ -1139,10 +1198,12 @@ $h \le 0.2$ (Table~\ref{tab:decision-app}).
 version 3.1~\citep{johnson2024mimiciv}, from
 PhysioNet~\citep{goldberger2000physionet}.
 One prediction time per admission, drawn at random among creatinine draws
-taken on a ward (a care unit that is not an intensive care, emergency,
+taken on a ward at least four hours after admission and outside any ICU
+stay. A ward is a care unit that is not an intensive care, emergency,
 recovery, obstetric, newborn, psychiatric, discharge-lounge or unknown unit,
-and in which MIMIC-IV records no ICU stay) at least four hours after
-admission. Features: age, sex, emergency admission, hours since admission, a
+and in which ICU stays begin for fewer than $10\%$ of admissions and
+transfers; this excludes two neurological step-down units, in which most do,
+but not the general wards on which MIMIC-IV records a handful of ICU stays. Features: age, sex, emergency admission, hours since admission, a
 prior ICU stay in the same admission, and the last value in the preceding
 24 hours of creatinine, urea nitrogen, sodium, potassium, chloride,
 bicarbonate, glucose, anion gap, white cells, haemoglobin and platelets, with
@@ -1154,7 +1215,9 @@ $40\%$ of early-period patients; alerts fire at a $10\%$ alert rate on those
 patients; an alert is acted upon with probability $0.85$; an acted-upon alert
 prevents an event that would otherwise occur with probability $0.5$ and never
 causes one; $30\%$ of post-deployment patients form a randomised unalerted
-arm; the refit loop runs for eight rounds on post-deployment patients.
+arm; the refit loop runs for eight rounds, each refit on a bootstrap sample
+of the whole post-deployment training pool, since at an event rate near
+$1\%$ a smaller sample holds too few events for 24 features.
 Everything else, including the outcome under standard care, is observed.
 \emph{Targets.} The policy contrast and the total exogenous change are known
 for the finite pools in expectation over the simulated components; the split
@@ -1164,33 +1227,37 @@ in real data and is reported, not scored.
 \emph{Results.} Table~\ref{tab:mimic} and Figure~\ref{fig:mimic} give the
 main run and Table~\ref{tab:mimic-sens} the sensitivity runs; everything was
 computed on the machine that holds the data, and only these aggregates left
-it. The cohort has $180{,}910$ ward admissions of $89{,}340$ patients:
-$114{,}952$ in 2008--2013, $53{,}647$ in 2014--2019 and $12{,}311$ in
-2020--2022, used only in the run with that late period. ICU admission within
-12 hours follows $1.17\%$ of prediction times and death $0.05\%$. The score is
-fitted to $45{,}629$ early-period admissions; its AUROC is $0.738$ on the
-held-out early admissions and $0.741$ in the late period, and its threshold, a
-predicted risk of $0.023$, flags $9.6\%$ and $9.3\%$ of them.
+it. The cohort has $368{,}995$ ward admissions of $155{,}852$ patients:
+$229{,}280$ in 2008--2013, $110{,}093$ in 2014--2019 and $29{,}622$ in
+2020--2022, used only in the run with that late period; $30\%$ of prediction
+times are on general medicine wards. ICU admission within 12 hours follows
+$0.89\%$ of prediction times and death $0.05\%$. The score is fitted to
+$91{,}002$ early-period admissions; its AUROC is $0.747$ on the held-out early
+admissions and $0.723$ in the late period, and its threshold, a predicted risk
+of $0.016$, flags $9.9\%$ and $10.4\%$ of them.
 
 \emph{Performance drop.} On the held-out early admissions the deployment
-lowers the Brier score from $0.0106$ to $0.0091$, AUROC from $0.738$ to
-$0.696$, observed over expected events from $0.98$ to $0.83$ and the
-calibration slope from $1.01$ to $0.79$ (\texttt{performance\_drop.json}). In
+lowers the Brier score from $0.0083$ to $0.0070$, AUROC from $0.747$ to
+$0.702$, observed over expected events from $1.04$ to $0.87$ and the
+calibration slope from $1.05$ to $0.83$ (\texttt{performance\_drop.json}). In
 the late period the score under-predicts under historical care (observed over
-expected $1.23$; the event rate has risen), and the same deployment brings the
-ratio to $1.05$: the alert's benefit hides the calibration drift as well as
+expected $1.27$; the event rate has risen), and the same deployment brings the
+ratio to $1.07$: the alert's benefit hides the calibration drift as well as
 the rise in the Brier score.
 
-\emph{Precision.} The randomised arm recovers the policy term in every run,
-with bias intervals that cover zero, but its single-run SD is $0.0007$ to
-$0.0011$ in every scenario except drift and deployment with 2020--2022 as the
-late period ($0.0021$ with $12{,}311$ admissions): as large as the term itself
-when the action prevents a quarter of events.
+\emph{Precision.} The randomised arm recovers the policy term in every run.
+Its bias intervals cover zero in 13 of the 14 runs and scenarios; the
+exception, periods by admission year with drift, is $-0.00012$ [$-0.00023$,
+$-0.00001$], $8\%$ of the term. One analyst's estimate is imprecise: its
+single-run SD is $0.0005$ to $0.0006$ in every scenario except drift and
+deployment with 2020--2022 as the late period ($0.0013$ with $29{,}622$
+admissions), three quarters of the term when the action prevents a quarter of
+events.
 
 \emph{Masking.} With real drift and deployment, the observed change in the
-Brier score is $+0.00062$ in the main run and $+0.00135$ when the action
-prevents a quarter of events, against a real deterioration of $+0.00229$; it
-is $-0.00028$ when the action prevents three quarters and $-0.00030$ when the
+Brier score is $+0.00039$ in the main run and $+0.00108$ when the action
+prevents a quarter of events, against a real deterioration of $+0.00190$; it
+is $-0.00038$ when the action prevents three quarters and $-0.00023$ when the
 alert flags $20\%$ of patients, so the deterioration then looks like an
 improvement.
 
@@ -1199,36 +1266,36 @@ policy weight is $0.15$ for alerted and $1$ for other patients, and the
 estimate measures how the alerted patients' losses enter the average, not what
 the action does: it is identical, replicate by replicate, whether the action
 prevents $25\%$, $50\%$ or $75\%$ of events, against policy contrasts from
-$-0.00073$ to $-0.00220$.
+$-0.00064$ to $-0.00191$.
 
 \emph{Split of the real drift.} The total exogenous change is recovered in
-every run, within $0.0004$ of its target. Its split into covariate and outcome
-terms rests on a classifier's density ratio between the periods and is not
-stable: in the main run each term has a single-run SD of $0.0037$ against a
-total of $+0.0023$ (means $+0.0048$ for $P(X)$ and $-0.0025$ for the outcome
-mechanism without deployment), and with periods by admission year or
-2020--2022 as the late period the two terms reach $\pm 0.03$ to $\pm 0.08$,
-with single-run SDs of the same size. The monitor and the proposed
+every run, within $0.00012$ of its target. Its split into covariate and
+outcome terms rests on a classifier's density ratio between the periods and is
+not stable: in the main run the two terms have single-run SDs of $0.0018$ and
+$0.0019$, as large as the total, $+0.0019$ (means $+0.0030$ for $P(X)$ and $-0.0011$ for
+the outcome mechanism without deployment), and with periods by admission year
+or 2020--2022 as the late period the two terms reach $\pm 0.01$ to
+$\pm 0.03$, with single-run SDs of the same size. The monitor and the proposed
 decomposition share the ratio and the problem; the policy term and the total
 need no ratio.
 
 \emph{Update rules.} Under the fixed threshold, refitting on untreated
-patients averts more events than naive refitting in every run, by $0.006$ to
-$0.092$ points, the difference growing with the action's effect; whether naive
-refitting beats keeping the score depends on whether recalibration to the late
-period gains more than the prevented events cost ($-0.025$ to $+0.046$
-points). With the alert rate held, no refit differs from keeping the score by
-more than $0.03$ points. The weighted refit averts fewer events than the
-unweighted refit on untreated patients in every run with the alert rate held
-and in all but one with the fixed threshold, and its replicate SD is larger in
-five of seven: with about 100 events in each training sample of $8{,}000$,
-weights of $1/0.15$ on alerted untreated patients add variance.
+patients averts more events than naive refitting in every run, by $0.005$ to
+$0.079$ points, the difference growing with the action's effect. Both refits
+recalibrate to the late period and flag more patients than the kept score, so
+whether naive refitting beats keeping the score depends on whether that gain
+exceeds what the prevented events cost ($-0.044$ to $+0.037$ points). With
+the alert rate held, the two refits are within $0.006$ points of each other in
+every run and within $0.024$ points of the kept score, usually below it: every
+refit learns from post-deployment data in which most alerted patients were
+treated. The weighted refit is within $0.013$ points of the unweighted one in
+every run.
 
 \emph{Periods.} Anchor year groups date an admission only to within several
 years. With periods by admission year, which drops admissions whose
 three-year window straddles 2013 and 2014, the early and late periods hold
-$66{,}683$ and $62{,}182$ admissions and every conclusion above holds. With
-2020--2022 as the late period ($12{,}311$ admissions, event rate $1.5\%$) the
+$127{,}323$ and $125{,}683$ admissions, and the conclusions above hold. With
+2020--2022 as the late period ($29{,}622$ admissions, event rate $1.13\%$) the
 policy term and the exogenous change are recovered with wider intervals.
 
 \IfFileExists{tables/e6_mimic.tex}{\input{tables/e6_mimic}}{}
@@ -1286,5 +1353,13 @@ restriction. Case (a) is immediate. In case (b), $|\theta(r)| \geq
 |\theta(\tau)|$ for $r \geq \tau$ when $|\theta|$ is nondecreasing, so
 $|\Theta| \geq |\theta(\tau)|\, \bar F(\tau)$, and the inequality reverses when
 $|\theta|$ is nonincreasing. $\square$
+
+\emph{Proposition~\ref{prop:nonid}.} In both models of the example $P(X)$ is
+the same in the two periods, $P_{e_1}(Y{=}1 \mid x) = P_{e_0}(Y{=}1 \mid x) -
+\delta(x)\, \mathbb{1}\{f(x) \geq \tau\}$, and $\rhat = f(X)$ is a function of
+$X$, so the observed distributions coincide. In the first model, standard care
+in $e_1$ restores $P_{e_0}(Y \mid X)$, so $R_{e_1}(f; \pi_0) =
+R_{e_0}(f; \pi_0)$ and $\Delta_\pi = \Delta R$; in the second,
+$Y(\pi_0) = Y(\pi_1)$ for every patient, so $\Delta_\pi = 0$. $\square$
 
 \end{document}
