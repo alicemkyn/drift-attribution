@@ -43,7 +43,9 @@ def rows_of(columns):
 
 
 def quoted(text, where="manuscript"):
-    assert text in TEX, f"{where}: expected to find {text!r}"
+    # whitespace-insensitive: line breaks inside a quoted phrase are layout, not content
+    norm = lambda t: re.sub(r"\s+", " ", t)
+    assert norm(text) in norm(TEX), f"{where}: expected to find {text!r}"
 
 
 def signed(v, digits=4):
@@ -363,6 +365,7 @@ PRODUCERS = {
     **{f"merged_exp{k}.json": f"sim2/merged.py {k}" for k in "ABCDEM"},
     "merged_expF.json": "sim2/exp_F_triage.py",
     "merged_expG2.json": "sim2/exp_G2_sites.py",
+    "merged_expG2_clusterboot.json": "sim2/exp_G2_sites_clusterboot.py --seeds 100 --B 300",
     "merged_expH.json": "sim2/exp_H_correction.py",
     "merged_expE1.json": "sim2/exp_E1_decision.py",
     "merged_expE1_prev.json": "sim2/exp_E1_decision.py --b0 -3.5 --alert-rate 0.2 --root-seed 2026092911 "
