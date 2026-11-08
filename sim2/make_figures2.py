@@ -211,6 +211,43 @@ def figure5(E7):
     save(fig, "fig5_utility.pdf")
 
 
+def figure_rd(E7):
+    """Appendix A: the alert's effect curve above the threshold and its Brier-scale weighting (Proposition prop:rd)."""
+    E = E7["E"]
+    c = E["policy_effect_curve"]
+    edges = np.array(c["bin_edges"])
+    mid, width = (edges[:-1] + edges[1:]) / 2, np.diff(edges)
+    theta, lo, hi = np.array(c["mean"]), np.array([v[0] for v in c["ci95"]]), np.array([v[1] for v in c["ci95"]])
+    fig, axes = plt.subplots(1, 2, figsize=(7.0, 2.3))
+    ax = axes[0]
+    ax.fill_between(mid, lo, hi, color=CP, alpha=0.25, lw=0)
+    ax.plot(mid, theta, "-o", color=CP, ms=3, lw=1.2, label="effect curve $\\theta(r)$")
+    avg = E["policy_effect_alerted"]["mean"]
+    ax.axhline(avg, color=CG, ls="--", lw=0.8, label=f"average among alerted ({avg:.3f})")
+    rd = E["rd_local"]
+    ax.errorbar([edges[0]], [rd["mean"]], yerr=[[rd["mean"] - rd["ci95"][0]], [rd["ci95"][1] - rd["mean"]]], fmt="s",
+                color=CY, ms=4, capsize=2, label=f"local jump at $\\tau_r$ ({rd['mean']:.3f})")
+    ax.axhline(0, color="k", lw=0.5)
+    ax.set_xlabel("risk score $\\hat r$")
+    ax.set_ylabel("effect of the alert policy on $P(Y{=}1)$")
+    ax.set_title("effect curve above the alert threshold")
+    ax.set_ylim(top=0.12)
+    ax.legend(fontsize=6, frameon=False, loc="upper left")
+    ax = axes[1]
+    contrib = np.array(c["brier_contribution"])
+    ax.bar(mid, contrib, width=0.9 * width, color=np.where(contrib >= 0, CP, CY))
+    ax.axhline(0, color="k", lw=0.5)
+    ax.set_ylim(1.4 * min(contrib.min(), 0), 1.6 * contrib.max())
+    total, rd_const = E["brier_policy_term"]["mean"], E["rd_constant_effect_brier"]["mean"]
+    ax.text(0.02, 0.97, f"sum: {total:+.4f} (the policy term)\nconstant effect from the jump: {rd_const:+.4f}",
+            transform=ax.transAxes, va="top", fontsize=6.5)
+    ax.set_xlabel("risk score $\\hat r$")
+    ax.set_ylabel("$(1 - 2r)\\,\\theta(r)\\,dF(r)$ per bin")
+    ax.set_title("contribution to the Brier-scale policy term")
+    fig.tight_layout()
+    save(fig, "fig_rd_curve.pdf")
+
+
 def main():
     E7 = json.loads((ROOT / "figures/merged_expE7.json").read_text())
     figure1(E7)
@@ -219,6 +256,7 @@ def main():
     make_figure3_E3.main()
     figure4(E7)
     figure5(E7)
+    figure_rd(E7)
     import make_figure_E1
     make_figure_E1.main()
     if (ROOT / "figures/fig7_mimic.pdf").exists():

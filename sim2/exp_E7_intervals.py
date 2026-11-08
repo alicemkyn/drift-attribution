@@ -302,11 +302,18 @@ def e_replicate(job):
     side = (rr > 0).astype(float)
     coef, *_ = np.linalg.lstsq(np.c_[np.ones(m.sum()), rr, side, rr * side], s1["y"][m], rcond=None)
     grid = rd_grid(cfg)
-    curve = [float(np.mean(policy[alerted & (r >= a) & (r < b)])) if np.sum(alerted & (r >= a) & (r < b)) > 30
-             else float("nan") for a, b in zip(grid[:-1], grid[1:])]
+    bins = [alerted & (r >= a) & (r < b) for a, b in zip(grid[:-1], grid[1:])]
+    curve = [float(np.mean(policy[m])) if m.sum() > 30 else float("nan") for m in bins]
+    weight = 1 - 2 * r                                    # Brier: (r - Y)^2 = r^2 + (1 - 2r) Y
     return {"rep": rep, "policy_effect_alerted": float(np.mean(policy[alerted])),
             "treatment_effect_alerted": float(np.mean((s1["y"] - s1["y0"])[alerted])),
-            "rd_local": float(coef[2]), "policy_effect_curve": curve}
+            "rd_local": float(coef[2]), "policy_effect_curve": curve,
+            "curve_mass": [float(m.mean()) for m in bins],
+            "curve_brier_contribution": [float(np.mean(weight * policy * m)) for m in bins],
+            # Proposition prop:rd: the curve integrated against dF, on the event scale and with weight 1 - 2r
+            "event_rate_policy_term": float(np.mean(policy)), "brier_policy_term": float(np.mean(weight * policy)),
+            # Proposition prop:rd(a): the local jump extrapolated as a constant effect above the threshold
+            "rd_constant_effect_brier": float(coef[2] * np.mean(weight * alerted))}
 
 
 def prospective_expected(cfg, n, rng):
@@ -456,7 +463,14 @@ def run_e(args, out):
                 "rd_minus_policy": summarize(rd - policy, seed=7),
                 "rd_relative_to_policy": float(rd.mean() / policy.mean()),
                 "policy_effect_curve": {"bin_edges": [float(v) for v in rd_grid(make_cfg(deploy=True))],
-                                        "mean": [float(v) for v in np.nanmean(curve, 0)]},
+                                        "mean": [float(v) for v in np.nanmean(curve, 0)],
+                                        "ci95": [summarize(curve[:, j], seed=13)["ci95"] for j in range(curve.shape[1])],
+                                        "mass": [float(v) for v in np.mean([r["curve_mass"] for r in rows], 0)],
+                                        "brier_contribution": [float(v) for v in
+                                                               np.mean([r["curve_brier_contribution"] for r in rows], 0)]},
+                "event_rate_policy_term": summarize([r["event_rate_policy_term"] for r in rows], seed=10),
+                "brier_policy_term": summarize([r["brier_policy_term"] for r in rows], seed=11),
+                "rd_constant_effect_brier": summarize([r["rd_constant_effect_brier"] for r in rows], seed=12),
                 "runs": rows}
 
 
@@ -533,7 +547,8 @@ def main():
     for part in args.parts.split(","):
         parts[part](args, out)
         print(f"finished {part} ({time.time() - start:.0f}s)", flush=True)
-    write_json(args.output, out)
+    order = ("design", "parameters", "A", "B", "D", "E", "F")         # a merged rerun keeps the full run's layout
+    write_json(args.output, {k: out[k] for k in order if k in out})
     print(f"wrote {args.output} in {time.time() - start:.0f}s")
 
 

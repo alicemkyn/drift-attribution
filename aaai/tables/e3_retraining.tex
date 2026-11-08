@@ -3,6 +3,7 @@
 \centering\scriptsize
 \caption{Update rules after deployment (Experiment C), events averted against standard care at round 8 (percentage points), mean and 95\% bootstrap interval over 50 independent seeds per column. ``Weighted'' uses $1/P(A{=}0\mid X)$ from the logged alert rule and response probabilities; ``estimated weights'' replaces them with a logistic regression of $A$ on $X$, the alert and their interaction. Last row: mean score minus mean untreated risk for naive refitting.}
 \label{tab:retrain-app}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lcccccc}
 \toprule
  & \multicolumn{3}{c}{Fixed threshold} & \multicolumn{3}{c}{Rate-held threshold}\\
@@ -21,4 +22,5 @@ Refit on $A{=}0$, weighted & 11.40 [11.26, 11.54] & 8.14 [8.04, 8.23] & 9.50 [9.
 Naive refit, calibration & $-$0.121 & $-$0.074 & $-$0.093 & $-$0.159 & $-$0.104 & $-$0.129\\
 \bottomrule
 \end{tabular}
+}
 \end{table*}

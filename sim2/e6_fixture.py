@@ -12,7 +12,10 @@ psychiatric units), ED visits without an admission, discharge rows without a
 unit, repeat admissions years after the anchor year, a 2020 - 2022 anchor
 group, MIMIC-IV admission types, lab rows without hadm_id or with a text value
 and no valuenum, quoted comments containing commas, quotes and line breaks,
-and a urine creatinine item that shares the blood item's label.
+a urine creatinine item that shares the blood item's label, ICU stays in a
+step-down unit that also takes ward patients (as Neuro Stepdown in MIMIC-IV),
+and a few ICU stays recorded on a general ward (as in MIMIC-IV v3.1), which
+must not remove that ward from the cohort.
 
     python3 sim2/e6_fixture.py --out /tmp/mimic_fixture --patients 6000
 """
@@ -47,7 +50,8 @@ LABITEMS = (
 WARDS = ("Medicine", "Med/Surg", "Surgery", "Cardiology", "Hematology/Oncology", "Medicine/Cardiology",
          "Neuro Stepdown", "Transplant", "Observation")
 ICUS = ("Medical Intensive Care Unit (MICU)", "Surgical Intensive Care Unit (SICU)", "Coronary Care Unit (CCU)",
-        "Cardiac Vascular Intensive Care Unit (CVICU)")
+        "Cardiac Vascular Intensive Care Unit (CVICU)", "Neuro Stepdown")
+CONVERTED_WARD = "Medicine"     # a few ICU stays are recorded on this ward, as in MIMIC-IV v3.1
 NON_WARD = ("PACU", "Labor & Delivery", "Psychiatry", "Emergency Department Observation", "Unknown", "Discharge Lounge")
 ADMISSION_TYPES = (("EW EMER.", 0.45), ("URGENT", 0.12), ("DIRECT EMER.", 0.05), ("ELECTIVE", 0.12),
                    ("OBSERVATION ADMIT", 0.1), ("SURGICAL SAME DAY ADMISSION", 0.08), ("EU OBSERVATION", 0.04),
@@ -102,7 +106,7 @@ def admission(rng, ids, subject, admit, severity, late, age, rows):
     deathtime = ""
     if deterioration and not died:
         icu_out = t_event + timedelta(hours=float(rng.uniform(24, 96)))
-        icu_unit = ICUS[int(rng.integers(0, len(ICUS)))]
+        icu_unit = ICUS[int(rng.integers(0, len(ICUS)))] if rng.random() > 0.02 else CONVERTED_WARD
         transfers.append([subject, hadm, ids.next("transfer"), ward_event, ward, ward_in.strftime(TS), t_event.strftime(TS)])
         transfers.append([subject, hadm, ids.next("transfer"), "transfer", icu_unit, t_event.strftime(TS), icu_out.strftime(TS)])
         disch = max(disch, icu_out + timedelta(hours=24))

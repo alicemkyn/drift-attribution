@@ -2,10 +2,12 @@
 
 Task E6 in the team to-do: real covariates and outcomes for a deterioration
 task, a simulated alert policy and treatment effect on top, Experiments A and C
-repeated. The code is complete and tested end to end on a synthetic stand-in.
-The figure and numbers for the paper have to be produced by a team member with
-credentialed MIMIC-IV access, on their own machine. `docs/NEXT_STEPS.md` has
-the checklist and the manuscript edits.
+repeated. The credentialed run was done on MIMIC-IV v3.1 on the machine that
+holds the data, first on 28 October 2026 and again on 3 November with the
+corrected ward definition and whole-pool refits ("Cohort", "Design"); the
+results are below ("Results") and in the manuscript (F7, the E6 appendix,
+the last row of Table `tab:prevalence`).
+`docs/NEXT_STEPS.md` has the checklist.
 
 ## Data use
 
@@ -14,9 +16,10 @@ sharing it with third parties, and PhysioNet's guidance on online services
 extends that to sending it to hosted AI tools. Run the steps below yourself,
 keep the tables and the cohort file outside git (`~/physionet`, `data/`), and
 commit only aggregate outputs: `figures/merged_expE6*.json`,
-`figures/fig7_mimic*.pdf`, their copies in `aaai/figures/` and
-`aaai/tables/e6_*.tex`. These hold summary statistics over thousands of
-admissions and no patient-level rows.
+`figures/fig7_mimic*.pdf`, `figures/performance_drop.json`, their copies in
+`aaai/figures/`, `aaai/tables/e6_*.tex` and `aaai/tables/prevalence.tex`.
+These hold summary statistics over thousands of admissions and no
+patient-level rows.
 
 Every script prints counts, rates and estimates only. One exception needed
 handling: DuckDB quotes the offending CSV row in conversion and parsing errors.
@@ -36,9 +39,10 @@ as the demo).
 sim2/run_e6.sh demo                      # optional: open MIMIC-IV demo, extraction only (~2 MB)
 sim2/run_e6.sh download <physionet-user> # six tables of v3.1 (~3 GB) into ~/physionet/mimiciv/3.1
 sim2/run_e6.sh cohort                    # data/e6_cohort.npz and the acceptance checks
+.venv/bin/python sim2/e6_units.py --mimic-root ~/physionet/mimiciv/3.1   # optional: how each care unit is classified
 sim2/run_e6.sh main                      # figures/merged_expE6.json and Figure 7
 sim2/run_e6.sh sensitivity               # tagged runs for the appendix
-sim2/run_e6.sh report                    # figures, tables, F7 numbers, validator
+sim2/run_e6.sh report                    # performance drop, figures, tables, F7 numbers, validator
 ```
 
 `download` asks for the PhysioNet password once (it goes to a temporary netrc
@@ -62,6 +66,7 @@ python3 -m venv .venv && .venv/bin/python -m pip install -r requirements-e6.txt
 .venv/bin/python sim2/e6_mimic_cohort.py --mimic-root ~/physionet/mimiciv/3.1 --out data/e6_cohort.npz
 .venv/bin/python sim2/exp_E6_mimic.py --cohort data/e6_cohort.npz --workers 4
 .venv/bin/python sim2/exp_E6_mimic.py --cohort data/e6_cohort.npz --tag rrr25 --rrr 0.25   # sensitivity runs
+.venv/bin/python sim2/check_performance_drop.py                                   # MIMIC-IV part of performance_drop.json
 .venv/bin/python sim2/make_figures2.py && .venv/bin/python sim2/make_tables.py
 .venv/bin/python sim2/e6_report.py && .venv/bin/python sim2/validate_josh_results.py
 ```
@@ -70,10 +75,18 @@ python3 -m venv .venv && .venv/bin/python -m pip install -r requirements-e6.txt
 
 - Adult admissions (age at admission 18 or older).
 - One prediction time per admission, chosen at random (deterministic hash)
-  among creatinine draws taken on a ward, at least 4 h after admission and
-  before discharge. Ward means a `transfers` care unit that is not an ICU,
-  emergency, PACU, obstetric, newborn, psychiatric, discharge-lounge or
-  unknown unit, and that never appears as an ICU unit in `icustays`.
+  among creatinine draws taken on a ward, at least 4 h after admission,
+  before discharge and outside any ICU stay. Ward means a `transfers` care
+  unit that is not an ICU, emergency, PACU, obstetric, newborn, psychiatric,
+  discharge-lounge or unknown unit by name, and in which ICU stays begin for
+  fewer than 10% of its admit and transfer events (`ICU_UNIT_SHARE`). The
+  share matters: MIMIC-IV v3.1 records a handful of ICU stays on general
+  wards (16 among about 192,000 Medicine events), and the first version of
+  this rule, which dropped any unit that ever began an ICU stay, removed
+  Medicine, Med/Surg, Neurology, Surgery/Trauma and two intermediate units
+  from the cohort. Neuro Intermediate and Neuro Stepdown (65% and 70%) are
+  excluded; general wards stay below 2%. `sim2/e6_units.py --mimic-root ...`
+  prints the classification of every unit (counts only).
 - Features: age, sex, emergency admission, hours since admission, a prior ICU
   stay in the same admission, and the last value in the preceding 24 h of
   creatinine, urea nitrogen, sodium, potassium, chloride, bicarbonate,
@@ -125,9 +138,18 @@ Experiment B.
 - Experiment C analogue: the late period is split by patient into training
   (60%) and evaluation pools; eight rounds; fixed or rate-held threshold; keep,
   naive refit, refit on A = 0, weighted refit. Events averted are expected
-  values on the evaluation pool against its historical outcomes.
+  values on the evaluation pool against its historical outcomes. Each refit
+  uses a bootstrap sample of the whole training pool (`--n-train 0`, the
+  default since 3 November). The first run refitted on 8,000 admissions:
+  about 80 events at this event rate, too few for 24 features, so every
+  refit, even on untreated patients, lost to the original score with the
+  alert rate held, and refit noise hid the feedback.
 - `--workers` runs replicates in parallel; results do not depend on the worker
-  count. The main run takes about 20 to 40 minutes with 4 workers.
+  count: rerun with 6 workers, the main run wrote a byte-identical JSON. On an
+  Apple-silicon laptop with 4 workers (sharing the CPU with other jobs) the
+  main run took 6 minutes and the six sensitivity runs 2.5 to 4 minutes each;
+  the slow step is the download (PhysioNet served about 100 KB/s, about five
+  hours for `labevents`).
 
 ## Sensitivity runs
 
@@ -144,13 +166,21 @@ group (v3.x), `covid` (`--late "2020 - 2022"`), with 100 and 30 replicates.
 - `aaai/tables/e6_mimic.tex` (cohort in the caption, attribution and update
   rules) and `aaai/tables/e6_sensitivity.tex`; the appendix includes both when
   present.
+- The `mimic_iv` part of `figures/performance_drop.json` (Brier score, AUROC,
+  observed over expected events and calibration slope before and after the
+  simulated deployment, on the held-out early-period and the late-period
+  admissions) and the MIMIC-IV row of `aaai/tables/prevalence.tex`. The
+  validator checks that its Brier changes equal the policy contrasts of the
+  main run.
 - `sim2/e6_report.py` prints the numbers F7 quotes, in the exact format the
   validator checks, and a draft of the F7 result sentences whose wording
   follows the sign of the policy term.
 
 ## What to expect
 
-With a 5 to 10% event rate, alerted patients mostly have predicted risk below
+Written before the run and confirmed by it, at a lower event rate than
+assumed here (0.84% before and 1.04% after, mean predicted risk 0.03 among
+alerted patients). With a 5 to 10% event rate, alerted patients mostly have predicted risk below
 0.5. Preventing their events then lowers the Brier score (the derivative of
 E[(r - Y)^2] in P(Y = 1) is 1 - 2r), so the policy term is negative. The score
 still degrades as a model: AUROC falls, and it over-predicts (observed over
@@ -161,6 +191,57 @@ Brier change depends on prevalence (positive at the 40% operating point). The
 attribution question is unchanged (the monitor books the policy term to the
 outcome mechanism); the text should report the drop in discrimination and
 calibration and the sign of the Brier change separately.
+
+## Results (3 November 2026; MIMIC-IV v3.1)
+
+Cohort (corrected ward definition): 368,995 ward admissions of 155,852 adult
+patients; 229,280 in 2008-2013 (event rate 0.84%), 110,093 in 2014-2019
+(1.04%) and 29,622 in 2020-2022 (1.13%); 30% of prediction times are on
+general medicine wards. ICU admission within 12 h follows 0.89% of prediction
+times, death 0.05%. All acceptance checks passed. The score (91,002
+early-period admissions) has AUROC 0.747 on held-out early admissions and
+0.723 late; its threshold (predicted risk 0.016) flags 9.9% and 10.4%.
+
+- Deployment only. Policy contrast -0.00127. The monitor books -0.00128 to
+  P(Y | X) and nothing to P(X); the randomised arm estimates -0.00131 (bias
+  interval covers zero) with a single-run SD of 0.0005, two fifths of the term.
+  The union graph with oracle weights returns -0.00215, 69% too large, and the
+  same value replicate by replicate whatever the effect size. AUROC falls
+  0.747 to 0.702, observed over expected 1.04 to 0.87, calibration slope 1.05
+  to 0.83 (`performance_drop.json`, `mimic_iv`).
+- Real drift and deployment. Under historical care the Brier score rises by
+  +0.00190 between the periods; with the alert the observed change is +0.00039:
+  the alert's benefit (-0.00147) hides 77% of a real deterioration, and with
+  rrr 0.75 or a 20% alert rate the observed change is negative. The proposed
+  decomposition recovers the policy term (-0.00154) and the exogenous change
+  (+0.00193); the monitor assigns -0.00244 to P(Y | X). In the late period the
+  score under-predicts under historical care (O/E 1.27) and deployment brings
+  O/E to 1.07, hiding the calibration drift too.
+- Bias intervals of the randomised arm cover zero in 13 of 14 runs and
+  scenarios; the exception (admission-year periods with drift) is -0.00012,
+  8% of the term.
+- Split of the exogenous change. Not stable: in the main run the two terms
+  have single-run SDs of 0.0018 and 0.0019 against a total of +0.0019, and
+  with admission-year periods or 2020-2022 they reach +-0.01 to +-0.03. The
+  total stays within 0.00012 of its target in every run.
+- Update rules, round 8, fixed threshold: keep 0.154, naive 0.148, refit on
+  A = 0 0.177, weighted 0.183 points. Refits recalibrate to the late period,
+  where the original score under-predicts; naive refitting also absorbs the
+  prevented events (alert rate 10.7% against 15.4%) and averts a sixth fewer
+  events than refitting on A = 0. The gap is positive in every run and grows
+  with the effect (0.005, 0.029, 0.079 points at rrr 0.25, 0.5, 0.75); with
+  rrr 0.75 the naive refit alternates between rounds in damped form. With the
+  alert rate held the two refits are within 0.006 points of each other and,
+  usually, slightly below the kept score (0.01 points in the main run). The
+  weighted refit is within 0.013 points of the unweighted one.
+
+What changed on 3 November. The first run (28 October) dropped every unit in
+which MIMIC-IV records any ICU stay, which removed Medicine, Med/Surg,
+Neurology, Surgery/Trauma and two intermediate units (180,910 admissions),
+and refitted on 8,000 admissions per round (about 80 events), so that every
+refit lost to the original score with the alert rate held. The attribution
+findings held in both runs; the update-rule comparison is only interpretable in
+the second.
 
 ## Open stand-in (until MIMIC-IV access)
 
@@ -219,7 +300,9 @@ Results (1 October; event rate 3.6% at A, 1.8% at B):
 layout and a `FIXTURE_NOT_MIMIC` marker: real care-unit names, ED visits
 without an admission, repeat admissions years after the anchor year, a
 2020 - 2022 group, text-only lab values, quoted comments with commas and line
-breaks, and a urine creatinine item with the blood item's label. Cohorts built
+breaks, a urine creatinine item with the blood item's label, ICU stays in a
+step-down unit that also takes ward patients, and a few ICU stays recorded
+on a general ward, which must not remove that ward. Cohorts built
 from it are flagged, and `exp_E6_mimic.py` refuses to write them into
 `figures/`:
 

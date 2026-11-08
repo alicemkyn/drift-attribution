@@ -1,12 +1,32 @@
 # Next steps (handoff)
 
 State: E1 to E5 and E7 are done and were checked against the manuscript in a
-second pass; the corrections are listed in `docs/JOSH_E1_E7_NOTES.md`. E6 is
-ready to run: `sim2/run_e6.sh` goes from a credentialed MIMIC-IV download to
-the paper numbers, and was tested end to end on the synthetic fixture. Read
-`docs/JOSH_E1_E7_NOTES.md` first; `docs/E6_MIMIC.md` describes the E6 design.
+second pass; the corrections are listed in `docs/JOSH_E1_E7_NOTES.md`. E6 was
+run on MIMIC-IV v3.1 (`sim2/run_e6.sh`, on the machine that holds the data)
+on 28 October 2026 and rerun on 3 November with the corrected ward
+definition and whole-pool refits; F7, the E6 appendix and the last row of
+Table `tab:prevalence` report it, and the validator, which now checks every
+MIMIC-IV number in the text, passes with the E6 check active. Read `docs/JOSH_E1_E7_NOTES.md` first; `docs/E6_MIMIC.md` describes
+the E6 design and results.
 
 ## 1. Run E6 on credentialed MIMIC-IV (required; closes task E6)
+
+**Done 28 October, redone 3 November 2026.** Download (checksums match),
+cohort, main and six sensitivity runs, report. Checking the printed ward list
+(1.3) showed that the first cohort (180,910 admissions) had lost Medicine,
+Med/Surg, Neurology, Surgery/Trauma and two intermediate units: the rule
+dropped any unit in which MIMIC-IV v3.1 records an ICU stay, and a handful
+are recorded on general wards. The cohort script now treats a unit as an ICU
+unit only if ICU stays begin there for at least 10% of its admit and transfer
+events, and excludes draws taken during an ICU stay; `sim2/e6_units.py`
+prints the classification of every unit. The corrected cohort has 368,995
+admissions (event rate 0.84% and 1.04%), and every acceptance check passes.
+Update-rule refits now use the whole training pool (`--n-train 0`), as for
+the open stand-in. The report step also writes the MIMIC-IV part of
+`figures/performance_drop.json`. F7 and the E6 appendix report the results;
+`docs/E6_MIMIC.md` ("Results") summarises them. A rerun of the main run with
+6 workers wrote a byte-identical JSON. The steps below stay as the recipe for
+a rerun.
 
 **Where.** Your own machine, with PhysioNet credentialed access to MIMIC-IV.
 
@@ -100,6 +120,9 @@ manuscript is updated:
 - Appendix E6: replace `\todo{Numbers and Figure~\ref{fig:mimic}...}` with a
   sentence pointing to Tables `tab:mimic` and `tab:mimic-sens`.
 
+Then `sim2/run_e6.sh publish` commits and pushes the aggregate result files
+and nothing else; `sim2/run_e6.sh all <username>` ends with this step.
+
 **Done when:** the validator passes with the E6 check active (it rejects
 fixture or demo-sized cohorts, open F7 or appendix TODOs, and F7 text without
 the reported numbers), Figure 7 renders, and only the aggregate files printed
@@ -116,30 +139,68 @@ by the report step are committed; `data/` stays untracked.
   point and falls at realistic event rates, where the monitor books the
   improvement to the outcome mechanism. The low-prevalence run (6.6%, alert
   rate 20%) shows F1 and F4 hold with estimators, not only oracle values (see
-  `JOSH_E1_E7_NOTES.md`). Decide how W1 and W7 say this: report the drop in
+  `JOSH_E1_E7_NOTES.md`). MIMIC-IV settles the empirical side: at its 0.85%
+  event rate the deployment lowers the Brier score (-0.0013) while AUROC falls
+  (0.747 to 0.702) and the score over-predicts (O/E 1.04 to 0.87), and with
+  real drift the alert's benefit hides 77% of a real Brier deterioration
+  (F7). Decide how W1 and W7 say this: report the drop in
   AUROC and calibration alongside the Brier change, move the low-prevalence
   point into the main text, or also attribute a metric that falls at every
   prevalence.
+- **F3 at realistic event rates (from MIMIC-IV).** The synthetic operating
+  point makes naive refitting collapse and oscillate; on MIMIC-IV (1% events,
+  the action prevents half of the events among acted-upon alerts) naive
+  refitting averts a sixth fewer events than refitting on untreated patients,
+  oscillates only in damped form with the strongest action, and the gap grows
+  with the effect (Table `tab:mimic-sens`). F3 and the limitations now say so. Decide whether the
+  main text should lead F3 with the mechanism rather than the size of the loss.
+- **The covariate/outcome split of exogenous change (from MIMIC-IV).** The
+  policy term and the total exogenous change are differences of mean losses
+  and are recovered in every MIMIC-IV run; the split needs a density ratio
+  between the periods and was too variable to interpret (single-run SDs 0.0018
+  and 0.0019 against a total of 0.0019; up to +-0.03 with admission-year
+  periods or 2020-2022). Section 4 and the limitations now say so. Decide whether the
+  decomposition's headline output should be the policy term and the total,
+  with the split as a secondary, uncertain quantity.
+- **Size of the randomised arm (from MIMIC-IV).** At a 1% event rate a 30% arm
+  among 138,000 admissions gives a single-run SD two fifths of the policy term
+  (three quarters of it when the action prevents a quarter of events). The responsible
+  use statement now says so. A patient-level bootstrap on MIMIC-IV (as E7 does
+  for the simulations) would give the analyst's coverage; not run yet.
+- **Weighted refit at low event rates (from MIMIC-IV).** With whole-pool
+  refits it is within 0.013 points of the unweighted refit on untreated
+  patients in every run (above it in five of seven fixed-threshold runs); the
+  deficit of the first run came from refitting on 8,000 admissions. Weighting
+  is not needed at this event rate but costs nothing; keep it as the default
+  correction unless the team prefers the simpler unweighted refit.
 - **E1 headline rule.** The task rule (refit when the exogenous share exceeds
   one half) refits needlessly under pure covariate shift. The outcome-share
   rule has zero regret in S1 to S4 at the calibrated point; at 6.6% prevalence
   it loses 0.55 points in S4, where the outcome share sits at 0.52, next to the
   cut-off. Refitting on untreated patients has zero worst-case regret at both
   operating points. Decide which rule the paper leads with.
-- **Logging requirements** (Section 5): add alert exposure and either the
-  clinician-response probabilities or enough to model them; with estimated
-  propensities the weighted refit of E3 is within 0.01 points of the logged
-  version.
+- **Logging requirements** (Section 5): done 3 November. The paragraph now
+  lists the assignment for a randomised arm, site identities and rollout
+  dates, and the clinician-response probabilities or enough to model them
+  (with estimated propensities the weighted refit of E3 is within 0.01 points
+  of the logged version).
 - **Identification table, site stepped wedge, prospective contrast ("No").**
   In E5 the crossover difference in differences minus the DiD-anchored
   deployment-caused term recovers the prospective contrast within 1.4% in all
   four cells. The control change cancels, so this is a within-site,
   covariate-adjusted before/after comparison: it holds only without
   outcome-mechanism drift, which E5 does not simulate. Keep "No" or qualify it.
-- **Threshold-discontinuity appendix** (`\todo` in Appendix A). The numbers are
-  in `merged_expE7.json`, part E, including the policy-effect curve. The curve
-  is hump-shaped and falls to zero at high scores, so condition (b) of
-  Proposition 3 (monotone effect) does not hold in the simulation.
+- **Threshold-discontinuity appendix.** Appendix A now reports the experiment
+  from `merged_expE7.json`, part E, and the threshold proposition (`prop:rd`,
+  now Proposition 4) is restated: it separates the alert's effect on the
+  event rate from the Brier-scale policy term and
+  says which monotone direction gives which bound. The simulated curve is
+  hump-shaped, so neither condition holds there, and the text says so. Done 3
+  November: Figure `fig:rd` (`figures/fig_rd_curve.pdf`, from part E, which
+  now also stores bin masses and the Brier-scale terms). Integrated with
+  weight 1 - 2r the curve gives +0.0269, the policy contrast of F1 (the
+  validator checks this); the local jump extrapolated as a constant effect
+  gives +0.0461, 71% too large.
 
 ## 3. Reference checks (L2/L3)
 
@@ -151,6 +212,20 @@ closed: Lenert 2019 and Sperrin 2019 volume and pages confirmed, arXiv
 Shift in Pathology Vision-Language Model" (key `guan2026detecting`), the
 Gonzalez et al. author list is complete (key `gonzalez2024regulating`, first
 posted December 2024), and Keogh and van Geloven 2024 has volume and pages.
+
+Novelty check (23 October): prior work already has parts of each
+contribution, and the draft now says so. Treatment use biases validation
+(Pajouheshnia et al. 2017) and effective interventions make a deployed model
+look decayed (Ansari et al. 2025), so the AUROC fall is cited as known and
+Proposition 2 is framed as formalising it. The policy-last split is an
+asymmetric Shapley value (Frye et al. 2020). Randomised withholding and
+weighting are used for monitoring (Corbin et al. 2023; Kim et al. 2025), and
+threshold discontinuities (Gallo et al. 2024) and staggered rollouts (Escobar
+et al. 2020) for evaluating alerts, so the contribution is stated as which
+term each design identifies. Also added: Singh et al. 2024, Feng et al. 2024
+(AISTATS), Schuler et al. 2020, van Amsterdam et al. 2025, Angrist and
+Rokkanen 2015. No DOI was found for Ansari et al. (NEJM AI 2(5)); add it if
+someone has journal access.
 
 ## 4. Assessed and not used
 

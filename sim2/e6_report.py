@@ -17,8 +17,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def brier_digits(d):
-    """Four decimals as elsewhere in the paper, five when the deployment-only policy term is below 1e-3."""
-    return 4 if abs(d["A"]["truth"]["deploy_only"]["pi"]) >= 1e-3 else 5
+    """Four decimals as elsewhere in the paper, five when the deployment-only policy term is below 1e-2.
+
+    At four decimals a term near 0.0015 keeps two significant digits, and an unbiased estimate can print a
+    unit away from its target (-0.0014 against -0.0015).
+    """
+    return 4 if abs(d["A"]["truth"]["deploy_only"]["pi"]) >= 1e-2 else 5
 
 
 def value(v, digits, sign=True):
@@ -32,6 +36,11 @@ def with_ci(entry, digits, sign=True):
     return f"{value(entry['mean'], digits, sign)} [{value(lo, digits, sign)}, {value(hi, digits, sign)}]"
 
 
+def events_digits(d):
+    """Two decimals for events averted (points), three when keeping the score averts less than one point."""
+    return 3 if final_round(d)["keep"]["events_averted_pp"]["mean"] < 1 else 2
+
+
 def final_round(d, rule="fixed"):
     last = d["parameters"]["rounds"]
     return {e["arm"]: e for e in d["C"]["summary"] if e["threshold_rule"] == rule and e["round"] == last}
@@ -39,7 +48,7 @@ def final_round(d, rule="fixed"):
 
 def quotes(d):
     """Formatted numbers F7 must contain (name -> LaTeX string)."""
-    k = brier_digits(d)
+    k, e = brier_digits(d), events_digits(d)
     A = d["A"]
     dep, both = A["summary"]["deploy_only"], A["summary"]["drift_and_deploy"]
     r8 = final_round(d)
@@ -52,11 +61,50 @@ def quotes(d):
         "policy contrast, drift and deployment": value(A["truth"]["drift_and_deploy"]["pi"], k),
         "randomised-arm policy term, drift and deployment": with_ci(both["proposed_pi"], k),
         "monitor P(Y|X), drift and deployment": with_ci(both["monitor_Ygx"], k),
-        "events averted at the last round, keep": with_ci(r8["keep"]["events_averted_pp"], 2, sign=False),
-        "events averted at the last round, naive refit": with_ci(r8["naive"]["events_averted_pp"], 2, sign=False),
-        "events averted at the last round, refit on A=0": with_ci(r8["untreated"]["events_averted_pp"], 2, sign=False),
-        "events averted at the last round, weighted refit": with_ci(r8["untreated_ipw"]["events_averted_pp"], 2, sign=False),
+        "events averted at the last round, keep": with_ci(r8["keep"]["events_averted_pp"], e, sign=False),
+        "events averted at the last round, naive refit": with_ci(r8["naive"]["events_averted_pp"], e, sign=False),
+        "events averted at the last round, refit on A=0": with_ci(r8["untreated"]["events_averted_pp"], e, sign=False),
+        "events averted at the last round, weighted refit": with_ci(r8["untreated_ipw"]["events_averted_pp"], e, sign=False),
     }
+
+
+def thousands(n):
+    return f"${n:,}$".replace(",", "{,}")
+
+
+def text_quotes(d, drop=None):
+    """Further numbers that F7, the E6 appendix and the prevalence appendix quote (name -> LaTeX string).
+
+    The validator looks for them with whitespace collapsed, so the source can be rewrapped. `drop` is the
+    MIMIC-IV part of performance_drop.json, as {pool: row}.
+    """
+    k = brier_digits(d)
+    c, S, T = d["cohort"], d["A"]["summary"], d["A"]["truth"]
+    both, fixed = S["drift_and_deploy"], final_round(d)
+    q = {"admissions": thousands(c["admissions"]), "patients": thousands(c["patients"]),
+         "admissions early": thousands(c["admissions_early"]), "admissions late": thousands(c["admissions_late"]),
+         "event rate early": f"${100 * c['event_rate_early']:.2f}\\%$", "event rate late": f"${100 * c['event_rate_late']:.2f}\\%$",
+         "score AUROC": f"${c['score_auroc_early_heldout']:.3f}$ on the held-out early admissions and "
+                        f"${c['score_auroc_late']:.3f}$ in the late period",
+         "single-run SD of the randomised arm": f"${S['deploy_only']['proposed_pi']['sd']:.4f}$",
+         "real deterioration": value(T["drift_and_deploy"]["exogenous"], k),
+         "observed change with real drift": value(both["dR_observed"]["mean"], k),
+         "exogenous estimate": with_ci(both["proposed_exogenous"], k),
+         "share of the deterioration hidden": f"${100 * T['drift_and_deploy']['pi'] / -T['drift_and_deploy']['exogenous']:.0f}\\%$",
+         "alert rates at the last round": f"${100 * fixed['naive']['alert_rate']['mean']:.1f}\\%$ of patients against "
+                                          f"${100 * fixed['untreated']['alert_rate']['mean']:.1f}\\%$"}
+    if drop:
+        e, late = drop["early period, held out"], drop["late period"]
+        q |= {"mean score of alerted patients": f"${e['mean_score_alerted']:.2f}$",
+              "observed over expected, early": f"from ${e['before']['observed_over_expected']:.2f}$ to "
+                                               f"${e['after']['observed_over_expected']:.2f}$",
+              "Brier score, early": f"from ${e['before']['brier']:.4f}$ to ${e['after']['brier']:.4f}$",
+              "AUROC, early": f"from ${e['before']['auroc']:.3f}$ to ${e['after']['auroc']:.3f}$",
+              "calibration slope, early": f"from ${e['before']['calibration_slope']:.2f}$ to "
+                                          f"${e['after']['calibration_slope']:.2f}$",
+              "observed over expected, late": f"${late['before']['observed_over_expected']:.2f}$",
+              "observed over expected, late, deployed": f"ratio to ${late['after']['observed_over_expected']:.2f}$"}
+    return q
 
 
 def draft(d):
@@ -96,6 +144,11 @@ def main():
         print("WARNING: synthetic fixture, not MIMIC-IV; nothing here is a result")
     print("\nquoted numbers (the validator looks for each string in the manuscript):")
     for name, text in quotes(d).items():
+        print(f"  {name}: {text}")
+    drop_path = ROOT / "figures/performance_drop.json"
+    drop = {r["pool"]: r for r in (json.loads(drop_path.read_text()).get("mimic_iv") or [])} if drop_path.exists() else {}
+    print("\nfurther numbers the text quotes (matched with whitespace collapsed):")
+    for name, text in text_quotes(d, drop or None).items():
         print(f"  {name}: {text}")
     print("\ndraft F7 results (replace the \\todo at the end of F7):\n")
     print(draft(d))

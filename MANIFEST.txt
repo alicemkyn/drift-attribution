@@ -12,6 +12,7 @@ docs/JOSH_E1_E7_NOTES.md
 docs/E6_MIMIC.md
 docs/SYNTHETIC_HOSPITAL_ASSESSMENT.md
 docs/NEXT_STEPS.md
+docs/status_update/
 requirements-e6.txt
 figures/exp1_results.json
 figures/exp2_results.json
@@ -25,6 +26,7 @@ figures/fig5_utility.pdf
 figures/fig6_decision.pdf
 figures/fig_attribution_scenarios.pdf
 figures/fig_auroc_vs_utility.pdf
+figures/fig_rd_curve.pdf
 figures/fig_rd_bounds.pdf
 figures/fig_retrain_redeploy.pdf
 figures/merged_expA.json
@@ -37,6 +39,20 @@ figures/merged_expE1.json
 figures/merged_expE1_prev.json
 figures/merged_expE7.json
 figures/merged_expE7_prev.json
+figures/merged_expE6.json
+figures/fig7_mimic.pdf
+figures/merged_expE6_admyear.json
+figures/merged_expE6_alert05.json
+figures/merged_expE6_alert20.json
+figures/merged_expE6_covid.json
+figures/merged_expE6_rrr25.json
+figures/merged_expE6_rrr75.json
+figures/fig7_mimic_admyear.pdf
+figures/fig7_mimic_alert05.pdf
+figures/fig7_mimic_alert20.pdf
+figures/fig7_mimic_covid.pdf
+figures/fig7_mimic_rrr25.pdf
+figures/fig7_mimic_rrr75.pdf
 figures/e6_open/merged_expE6_sepsis2019_AtoB.json
 figures/e6_open/fig_e6_sepsis2019_AtoB.pdf
 figures/e6_open/merged_expE6_sepsis2019_BtoA.json
@@ -58,6 +74,7 @@ sim2/dgp.py
 sim2/e6_fixture.py
 sim2/e6_mimic_cohort.py
 sim2/e6_report.py
+sim2/e6_units.py
 sim2/e6_sepsis_cohort.py
 sim2/exp_AB_robustness.py
 sim2/exp_E1_decision.py
@@ -70,6 +87,7 @@ sim2/exp_prevalence.py
 sim2/make_figure3_E3.py
 sim2/make_figure_E1.py
 sim2/make_figures2.py
+sim2/make_status_update.py
 sim2/make_tables.py
 sim2/make_tables_e7.py
 sim2/merged.py

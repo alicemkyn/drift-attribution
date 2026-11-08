@@ -47,7 +47,10 @@ Experiment C analogue (retraining). The late period is split by patient into
 a training pool and an evaluation pool. Eight rounds; fixed threshold or
 rate-held; rules keep, naive refit, refit on A = 0, and refit on A = 0 weighted
 by 1 / P(A = 0 | X). Events averted are expected values on the evaluation
-pool against its historical (standard-care) outcomes.
+pool against its historical (standard-care) outcomes. Each refit uses a
+bootstrap sample of the whole training pool (--n-train 0): at ward event
+rates near 1% a sample of 8,000 admissions holds about 80 events, too few
+for the 24 features, and refit noise would swamp the feedback.
 
 Periods. --period-by anchor_group (default) uses the patient's
 anchor_year_group. --period-by admission_year places each admission by its
@@ -444,7 +447,8 @@ def main():
     parser.add_argument("--reps-a", type=int, default=200)
     parser.add_argument("--reps-c", type=int, default=50)
     parser.add_argument("--rounds", type=int, default=8)
-    parser.add_argument("--n-train", type=int, default=8000, help="training sample per refit; 0 = the whole training pool")
+    parser.add_argument("--n-train", type=int, default=0,
+                        help="training sample per refit; 0 (default) = a bootstrap sample of the whole training pool")
     parser.add_argument("--root-seed", type=int, default=2026092906)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--tag", default=None, help="sensitivity run: write merged_expE6_<tag>.json and fig7_mimic_<tag>.pdf")

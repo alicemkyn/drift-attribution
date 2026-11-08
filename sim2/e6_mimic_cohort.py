@@ -12,7 +12,12 @@ quote a CSV row, goes to a log next to --out instead of the terminal;
 Task (matches the clinical task paragraph). Adult ward inpatients. One
 prediction time per admission, chosen at random (deterministic hash) among
 creatinine draws taken on a ward, at least four hours after admission and
-before discharge. Features are age, sex, emergency admission, hours since
+before discharge. A ward is a care unit that is neither excluded by name
+(EXCLUDED_UNITS) nor an ICU unit: a unit in which ICU stays begin for at least
+ICU_UNIT_SHARE of its admit and transfer events. MIMIC-IV v3.1 also records a
+few ICU stays on general wards, so the share, not the mere presence of an ICU
+stay, decides; draws taken during any ICU stay are excluded as well.
+sim2/e6_units.py prints how every unit is classified. Features are age, sex, emergency admission, hours since
 admission, a prior ICU stay in the same admission, and the last value in the
 preceding 24 hours of eleven routine blood tests (with missing indicators).
 Outcome: ICU admission (icu/icustays) or in-hospital death within 12 hours of
@@ -59,6 +64,7 @@ LABS = (
 )
 EXCLUDED_UNITS = ("intensive care", "icu", "ccu", "emergency", "unknown", "discharge lounge", "pacu",
                   "labor", "obstetric", "newborn", "nursery", "psychiatr")
+ICU_UNIT_SHARE = 0.10    # Neuro Stepdown and Neuro Intermediate exceed 0.6; general wards stay below 0.02
 HORIZON_HOURS = 12
 LOOKBACK_HOURS = 24
 EXPECTED_GROUPS = ("2008 - 2010", "2011 - 2013", "2014 - 2016", "2017 - 2019")
@@ -75,7 +81,7 @@ TYPES = {
     "labevents": {"subject_id": "BIGINT", "itemid": "BIGINT", "charttime": "TIMESTAMP", "valuenum": "DOUBLE"},
     "d_labitems": {"itemid": "BIGINT", "label": "VARCHAR", "fluid": "VARCHAR"},
     "icustays": {"subject_id": "BIGINT", "hadm_id": "BIGINT", "first_careunit": "VARCHAR",
-                 "last_careunit": "VARCHAR", "intime": "TIMESTAMP"},
+                 "last_careunit": "VARCHAR", "intime": "TIMESTAMP", "outtime": "TIMESTAMP"},
 }
 
 
@@ -120,21 +126,41 @@ def resolve_itemids(run, root):
     return ids
 
 
+def create_unit_tables(run, root):
+    """Tables icu (ICU stays) and tr (admit and transfer events with a care unit), shared with e6_units.py."""
+    run("icustays", f"CREATE TABLE icu AS SELECT subject_id, hadm_id, intime, outtime, first_careunit, last_careunit "
+                    f"FROM {table(root, 'icu', 'icustays')}")
+    run("transfers", f"""
+        CREATE TABLE tr AS
+        SELECT subject_id, hadm_id, intime, outtime, careunit
+        FROM {table(root, 'hosp', 'transfers')}
+        WHERE lower(eventtype) IN ('admit', 'transfer') AND hadm_id IS NOT NULL AND intime IS NOT NULL
+          AND outtime IS NOT NULL AND careunit IS NOT NULL""")
+
+
+def icu_units(run, share=ICU_UNIT_SHARE):
+    """Care units in which ICU stays begin for at least `share` of their admit and transfer events."""
+    rows = run("ICU units", f"""
+        WITH t AS (SELECT careunit, count(*) AS n FROM tr GROUP BY careunit),
+             f AS (SELECT first_careunit AS careunit, count(*) AS n_first FROM icu
+                   WHERE first_careunit IS NOT NULL GROUP BY 1)
+        SELECT f.careunit FROM f LEFT JOIN t USING (careunit) WHERE f.n_first >= {float(share)} * coalesce(t.n, 0)""")
+    return {r[0] for r in rows.fetchall()}
+
+
+def sql_list(values):
+    return ", ".join("'" + v.replace("'", "''") + "'" for v in sorted(values)) or "NULL"
+
+
 def build(root, run, seed=20260929, min_hours_after_admission=4.0):
     ids = resolve_itemids(run, root)
     id_list = ",".join(str(v) for v in ids.values())
     excluded = "|".join(EXCLUDED_UNITS)
-    run("icustays", f"CREATE TABLE icu AS SELECT subject_id, hadm_id, intime, first_careunit, last_careunit "
-                    f"FROM {table(root, 'icu', 'icustays')}")
-    run("transfers", f"""
-        CREATE TABLE ward AS
-        SELECT subject_id, hadm_id, intime, outtime, careunit
-        FROM {table(root, 'hosp', 'transfers')}
-        WHERE lower(eventtype) IN ('admit', 'transfer') AND hadm_id IS NOT NULL AND intime IS NOT NULL
-          AND outtime IS NOT NULL AND careunit IS NOT NULL
-          AND NOT regexp_matches(lower(careunit), '({excluded})')
-          AND careunit NOT IN (SELECT first_careunit FROM icu WHERE first_careunit IS NOT NULL
-                               UNION SELECT last_careunit FROM icu WHERE last_careunit IS NOT NULL)""")
+    create_unit_tables(run, root)
+    icu = icu_units(run)
+    run("wards", f"""
+        CREATE TABLE ward AS SELECT * FROM tr
+        WHERE NOT regexp_matches(lower(careunit), '({excluded})') AND careunit NOT IN ({sql_list(icu)})""")
     run("labevents", f"""
         CREATE TABLE labs AS
         SELECT subject_id, itemid, charttime, valuenum
@@ -157,6 +183,8 @@ def build(root, run, seed=20260929, min_hours_after_admission=4.0):
         WHERE l.itemid = {ids['creatinine']} AND a.age >= 18
           AND l.charttime >= a.admittime + INTERVAL {int(min_hours_after_admission * 60)} MINUTE
           AND l.charttime < a.dischtime
+          AND NOT EXISTS (SELECT 1 FROM icu i WHERE i.hadm_id = w.hadm_id AND l.charttime >= i.intime
+                                                AND l.charttime < i.outtime)
         GROUP BY l.subject_id, w.hadm_id, l.charttime""")
     run("prediction times", f"""
         CREATE TABLE pick AS
@@ -193,6 +221,7 @@ def build(root, run, seed=20260929, min_hours_after_admission=4.0):
     y_icu, y_death = np.asarray(base["y_icu"], int), np.asarray(base["y_death"], int)
     meta = {"seed": seed, "horizon_hours": HORIZON_HOURS, "lookback_hours": LOOKBACK_HOURS,
             "min_hours_after_admission": min_hours_after_admission, "excluded_unit_patterns": list(EXCLUDED_UNITS),
+            "icu_unit_share": ICU_UNIT_SHARE, "icu_units": sorted(icu),
             "itemids": ids, "mimic_root_name": Path(root).resolve().name}
     return {"X_raw": np.column_stack([demo, labs]), "feature_names": np.array(list(demo_cols) + [k for k, _, _ in LABS]),
             "y": np.maximum(y_icu, y_death), "y_icu": y_icu, "y_death": y_death,
@@ -236,6 +265,9 @@ def describe(c):
     for name, m in zip(names, np.isnan(x).mean(0)):
         if m > 0:
             print(f"  missing {name}: {100 * m:.1f}%")
+    meta = json.loads(str(c["meta_json"]))
+    print(f"  ICU units (ICU stays begin for at least {meta['icu_unit_share']:.0%} of their events), excluded: "
+          + ("; ".join(meta["icu_units"]) or "none"))
     units, counts = np.unique(c["careunit"], return_counts=True)
     order = np.argsort(-counts)
     shown = [(units[i], counts[i]) for i in order if counts[i] >= SMALL_CELL][:15]
