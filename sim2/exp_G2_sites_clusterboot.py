@@ -1,7 +1,7 @@
 """
 E5 add-on: site-cluster bootstrap for the stepped-wedge estimators.
 
-Isaac's point 7: uncertainty must respect the rollout design. Patients are
+Reviewer point 7: uncertainty must respect the rollout design. Patients are
 nested in sites and sites persist across periods, so an analyst holding one
 realisation of the wedge should resample SITES, not patients. This script
 reuses the data-generating process and estimators of exp_G2_sites.run_seed

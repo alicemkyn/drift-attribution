@@ -25,6 +25,29 @@ export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 Every command below runs from any directory and writes to both `figures/` and
 `aaai/figures/`.
 
+## Operating point
+
+All synthetic experiments behind the draft use one data-generating process,
+`sim2/merged.py:make_cfg`, which sets `dgp.Config(tau_r=0.45, tau_s=1.2,
+p_alert=0.85, b0=-0.6, eps=1e-3, theta=2.5)` and scales the score direction
+`w_r` by 1.5 (`w_y = w_r`). Other `Config` fields keep the `dgp.py` defaults
+(`phi = pi/3`, `q_hi = 0.80`). The scenarios are `merged.SCEN`: S1 `delta=0.5`
+(covariate mean shift), S2 `dy=0.6` (outcome logit intercept shift), S3
+deployment only, S4 all three. The prevalence runs use `make_cfg_at(b0, alert_rate)`,
+which moves the outcome intercept and places the alert threshold at a given
+pre-deployment alert rate. The module defaults in `dgp.py` are not the paper's
+operating point; use `make_cfg`.
+
+## MIMIC-IV
+
+The semi-synthetic experiment (E6) uses MIMIC-IV v3.1, which is credentialed
+data under the PhysioNet data use agreement and cannot be redistributed. The
+repository contains the cohort definition (`sim2/e6_mimic_cohort.py`,
+`sim2/e6_sepsis_cohort.py`), feature extraction (`sim2/e6_units.py`), the run
+script (`sim2/run_e6.sh`) and aggregate results only (`figures/merged_expE6*.json`);
+no patient-level data. Reproducing E6 requires a PhysioNet credential and a
+local copy of MIMIC-IV (`docs/E6_MIMIC.md`).
+
 ## Which script produces which file
 
 Times are on 4 cores.
