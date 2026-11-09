@@ -398,7 +398,8 @@ and $+0.6$ in the outcome logit intercept (S2), raising the Brier score by
 $0.051$ and $0.014$ against $0.027$ for deployment alone (S3); S4 combines all
 three. Estimators are evaluated against coalition values computed from the
 known mechanisms over $4 \times 10^6$ covariate draws per hybrid environment.
-Operating point, seeds and code are released.
+Operating point, seeds and code are released at
+\url{https://github.com/alicemkyn/drift-attribution}.
 
 \paragraph{Estimators.} (i) The union-graph importance-sampling estimator of
 Zhang et al.\ with players $\{P(X), \pi, P(Y \mid X, A)\}$, unclipped and with
@@ -409,9 +410,8 @@ the policy term identified from a randomised unalerted arm ($30\%$ of
 post-deployment patients). Each environment has $n = 20{,}000$ patients; every
 row of every sweep has its own seed block. Numbers are means over independent
 replicates (100 per scenario, 30 per positivity or triage level, 20 per
-utility cell) with 95\% percentile bootstrap intervals over replicates in
-brackets, the Monte Carlo error of the mean; the coverage of a single
-analyst's patient-level bootstrap for each estimator's own estimand is in
+utility cell) with 95\% bootstrap intervals over replicates in brackets;
+the coverage of a single analyst's patient-level bootstrap is in
 Appendix~\ref{app:intervals}, and Table~\ref{tab:information} (Appendix~\ref{app:information}) lists what
 each estimator and update rule observes.
 
