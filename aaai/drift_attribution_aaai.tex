@@ -102,15 +102,11 @@ drives interventions converges to a score that predicts its own effect or
 oscillates, propose a holdout set of patients for whom the score is not
 computed, and name as open the difficulty of telling drift in the system from
 the effect of the intervention. That difficulty is the question of this
-paper. Holdout sizing~\citep{haidarwehbe2025holdout}, monitoring under
-performativity~\citep{feng2024designing, corbin2023avoiding, kim2025monitoring},
-treatment-contaminated validation~\citep{pajouheshnia2017accounting,
-ansari2025challenges}, prediction under
-interventions~\citep{sperrin2018msm, vangeloven2020prediction, keogh2024prediction,
-luijken2024estimands} and performative
-prediction~\citep{perdomo2020performative, kabra2024limitations, lee2026partially}
-each cover part of the setting; none decomposes an observed performance change
-into the contributions of its mechanisms.
+paper. Work on holdout sizing, monitoring under performativity,
+treatment-contaminated validation, prediction under interventions and
+performative prediction covers parts of the setting (Section~\ref{sec:related});
+none decomposes an observed performance change into the contributions of its
+mechanisms.
 
 We make three contributions.
 (i)~\emph{Non-identification of the attribution game} (Section~\ref{sec:break}).
@@ -416,7 +412,7 @@ analyst's patient-level bootstrap for each estimator's own estimand is in
 Appendix~\ref{app:intervals}, and Table~\ref{tab:information} (Appendix~\ref{app:information}) lists what
 each estimator and update rule observes.
 
-\begin{figure*}[t]\centering\includegraphics[width=0.8\textwidth]{figures/fig1_attribution.pdf}
+\begin{figure*}[t]\centering\includegraphics[width=0.92\textwidth]{figures/fig1_attribution.pdf}
 \caption{Attribution of the Brier-score change under S3 and S4: two oracle
 references (open markers: Shapley game; filled: policy-contrast estimand) and
 four estimators. Means over 100 independent replicates ($n = 20{,}000$ per
@@ -459,7 +455,7 @@ their targets; under S4 the
 randomised-arm estimate ($+0.0343 / -0.0025 / +0.0433$ for $X / Y / \pi$)
 matches the target ($+0.0345 / -0.0024 / +0.0431$).
 
-\begin{figure*}[t]\centering\includegraphics[width=0.8\textwidth]{figures/fig2_positivity.pdf}
+\begin{figure*}[t]\centering\includegraphics[width=0.92\textwidth]{figures/fig2_positivity.pdf}
 \caption{The positivity continuum, S3 operating point. Left: policy
 contribution by estimator as the pre-deployment treatment probability
 $\varepsilon$ in the alert-only region varies (30 replicates per
@@ -484,7 +480,7 @@ Clipping bias is confined to $\varepsilon \in [10^{-4}, 10^{-3}]$. The
 proposed decomposition recovers its estimand at every $\varepsilon$, with
 analyst-interval coverage between $93\%$ and $100\%$.
 
-\begin{figure*}[t]\centering\includegraphics[width=0.68\textwidth]{figures/fig3_retrain.pdf}
+\begin{figure*}[t]\centering\includegraphics[width=\textwidth]{figures/fig3_retrain.pdf}
 \caption{Update rules after deployment (Experiment C), S3 operating point. Top:
 fixed alert threshold; bottom: original alert rate held. First three columns
 (one vertical scale): expected events averted against standard care for a
@@ -609,7 +605,7 @@ $0.85$ from $11.50$ to $10.56$ points at $h = 0.1$ and $9.63$ at $h = 0.2$
 (Table~\ref{tab:harm}, Appendix~\ref{app:intervals}).
 
 \begin{figure*}[t]\centering
-\IfFileExists{figures/fig7_mimic.pdf}{\includegraphics[width=0.8\textwidth]{figures/fig7_mimic.pdf}}{\fbox{\parbox{0.9\textwidth}{\centering Figure 7 is produced by \texttt{sim2/exp\_E6\_mimic.py} on credentialed MIMIC-IV data.}}}
+\IfFileExists{figures/fig7_mimic.pdf}{\includegraphics[width=0.92\textwidth]{figures/fig7_mimic.pdf}}{\fbox{\parbox{0.9\textwidth}{\centering Figure 7 is produced by \texttt{sim2/exp\_E6\_mimic.py} on credentialed MIMIC-IV data.}}}
 \caption{Semi-synthetic MIMIC-IV. Real covariates and outcomes; simulated
 deployment, clinician response, treatment effect and randomised arm (listed
 in the text). Left: attribution of the Brier-score change when only the
