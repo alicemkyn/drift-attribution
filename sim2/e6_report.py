@@ -4,7 +4,7 @@
 
 Prints each quantity F7 quotes and a draft of the F7 result sentences whose
 wording follows the sign of the policy term. check_e6 in
-validate_josh_results.py requires every string returned by quotes() to appear
+validate_results.py requires every string returned by quotes() to appear
 in the manuscript once the E6 run exists. The appendix numbers (cohort, event
 rates, AUROC, sensitivity runs) are in the generated tables
 aaai/tables/e6_mimic.tex and e6_sensitivity.tex (sim2/make_tables.py).

@@ -1,11 +1,11 @@
-# Josh's experiment tasks: E1 to E7
+# Experiment tasks E1 to E7
 
-Status of the experiment tasks assigned to Josh in the September 16 team
+Status of the experiment tasks assigned to the experiment lead in the September 16 team
 to-do, what each script does, what changed from the first pass on this branch,
 and what is still open. Every number in the manuscript that comes from these
 tasks is read from a JSON in `figures/` written by a script in `sim2/`; tables
 are generated into `aaai/tables/` by `sim2/make_tables.py` and
-`sim2/make_tables_e7.py`, and `sim2/validate_josh_results.py` checks the
+`sim2/make_tables_e7.py`, and `sim2/validate_results.py` checks the
 evidence, the mirrored copies, the generated tables and the quoted numbers.
 
 ## Status
@@ -215,7 +215,7 @@ export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
 .venv/bin/python sim2/exp_E7_intervals.py --parts A --b0 -3.5 --alert-rate 0.2 --root-seed 2026092917 --output merged_expE7_prev.json
 .venv/bin/python sim2/make_figures2.py         # all figures
 .venv/bin/python sim2/make_tables.py           # all generated tables
-.venv/bin/python sim2/validate_josh_results.py
+.venv/bin/python sim2/validate_results.py
 ```
 
 E6 has its own runner, `sim2/run_e6.sh` (`docs/E6_MIMIC.md`).

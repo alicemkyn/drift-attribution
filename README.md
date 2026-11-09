@@ -70,7 +70,7 @@ Times are on 4 cores.
 | `merged_expE6_<tag>.json` (MIMIC-IV sensitivity runs) | `sim2/run_e6.sh sensitivity`, same machine | |
 | `e6_open/*.json` (open stand-in) | `sim2/exp_E6_mimic.py` on the `sim2/e6_sepsis_cohort.py` cohort (`docs/E6_MIMIC.md`) | |
 
-`python3 sim2/validate_josh_results.py` fails if a data file in `figures/` has
+`python3 sim2/validate_results.py` fails if a data file in `figures/` has
 no entry in this list (`PRODUCERS` in that script).
 
 Checked on 5 October 2026 by rerunning every simulation command above (all but
@@ -96,7 +96,7 @@ part).
 python3 sim2/make_figures2.py        # main-text figures 1 to 6 and the Appendix A effect curve; copies Figure 7 if the MIMIC-IV run exists
 python3 sim2/make_tables.py          # every generated table in aaai/tables/
 python3 sim2/make_status_update.py   # status figures and captions for the team (docs/status_update/)
-python3 sim2/validate_josh_results.py
+python3 sim2/validate_results.py
 ```
 
 The three make scripts read only the saved JSON files, so they take seconds
