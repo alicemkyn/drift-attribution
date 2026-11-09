@@ -168,8 +168,11 @@ clinical suspicion: patients whose deterioration is apparent at the bedside
 are treated early, others rarely are. The model adds value for the flagged
 patients clinicians would not have suspected; before deployment such patients
 were almost never treated, the support condition that Section~\ref{sec:break}
-turns on. The simulator of Section~\ref{sec:sim} encodes these policies, and the
-MIMIC-IV experiment uses the same population, outcome and horizon.
+turns on. The simulator of Section~\ref{sec:sim} is a patient world model for this
+task with the alert policy as the intervention: each counterfactual
+performance measure below is the expected loss of the fixed score along a
+rollout of that model under a stated policy. The MIMIC-IV experiment uses the
+same population, outcome and horizon.
 
 \paragraph{What monitoring sees, and the attribution game.} Routine
 monitoring evaluates a loss $\ell$ on $(X, Y)$ pairs and reports
@@ -708,13 +711,12 @@ monitor conditional performance~\citep{feng2024monitoring, guan2026detecting},
 performative or intrinsic, and regulatory work covers device
 updates~\citep{wu2024regulating, gonzalez2024regulating, afdideh2026aegis};
 these works detect, estimate or govern a change but do not attribute it to
-mechanisms. Evaluations of deployed alerts use the designs of
-Section~\ref{sec:ident} to estimate the alert's effect on outcomes:
-patient-level~\citep{wilson2021aki} and unit-level
-randomisation~\citep{rossetti2025concern}, a staggered
-rollout~\citep{escobar2020automated} and a threshold regression
+mechanisms. Trials of deployed alerts estimate the alert's effect on
+outcomes by patient-level~\citep{wilson2021aki} or
+unit-level~\citep{rossetti2025concern} randomisation, staggered
+rollout~\citep{escobar2020automated} or threshold regression
 discontinuity~\citep{gallo2024effectiveness}; we use the same designs to
-identify the alert's share of a monitored performance change.
+identify the alert's share of a performance change.
 
 \section{Limitations and responsible-use statement}
 \label{sec:responsible}
