@@ -42,3 +42,12 @@ overstates by $14\%$ (app:rd'ye); F7 union-graph aralığı; F7 weighted refit $
 3. İç hakem turu (W10): her sayı validator'dan; başlıklar tek başına okunur mu.
 4. Overleaf'e yükleme: `overleaf/` klasörünün tamamı (tex, bib, sty, bst, figures/, tables/).
 5. GitHub: PR #2, PR #6 merge; Isaac yaması + bu kesim tek PR olarak (token gelince ben).
+
+# 8 Kasım ekleri
+- GitHub: PR #2 merge (Alicem), Josh'un PR #6 branch'i `josh/status-figures-review` olarak aynalanıp PR #3 ile merge edildi;
+  main = d6e489f. Bugünkü tüm iş PR #4 (`alicem/aaai27-medwm-cut`, 2 commit, 7d3a0d2): https://github.com/alicemkyn/drift-attribution/pull/4
+- AAAI-27 kit: aaai2027.sty [preprint] + aaai2027.bst; sty pdfTeX zorunlu kılıyor (tectonic/XeTeX ile derlenmez).
+  Yerel derleme: pdflatex (TeX Live 2026, conda) + TeX Live 2022 bundle dizini TEXINPUTS olarak. Overleaf'te pdfLaTeX seçili olmalı.
+- newtxtext daha sıkı: ana metin 8. sayfanın %63'ünde bitiyor; Tablo 2 (keep-or-refit) ve dört marjinal katkı ana metne geri alındı.
+- Yazar bloğu hâlâ placeholder (First/Second/Third Author). Dolunca 2–4 satır eklenir; pay var.
+- Kalan: yazar bloğu; iç hakem turu (W10); Overleaf'e `overleaf/` zip'i yükle (derleyici: pdfLaTeX); PR #4 merge.

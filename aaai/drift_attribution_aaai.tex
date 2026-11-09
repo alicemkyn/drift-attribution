@@ -82,7 +82,8 @@ the observed AUROC falls and the score over-predicts at every event rate we
 study, in simulation and on MIMIC-IV ward admissions (F7), while the Brier
 score, the metric the attribution game decomposes, rises at high event rates
 and falls at realistic ones ($+0.019$ at a $40\%$ event rate, $-0.008$ at
-$14\%$; Table~\ref{tab:prevalence}); the misattribution we study does not
+$14\%$; Table~\ref{tab:prevalence}, Appendix~\ref{app:robustness}); the
+misattribution we study does not
 depend on that sign.
 
 \citet{zhang2023attributing} formulate performance-change attribution as a
@@ -354,7 +355,7 @@ $71\%$.
 \centering\scriptsize
 \setlength{\tabcolsep}{3pt}
 \caption{Identification by design, checked against Experiment F and the
-site-rollout experiment (Table~\ref{tab:sites}). ``$X$ split'': deployment-caused
+site-rollout experiment (Table~\ref{tab:sites}, Appendix~\ref{app:sites}). ``$X$ split'': deployment-caused
 against exogenous covariate shift. Under random rollout order the
 retrospective bias is $-0.2\%$ and $-0.7\%$; with rollout linked to a site
 characteristic that also sets baseline risk it is $-10.5\%$ under common
@@ -407,7 +408,7 @@ replicates (100 per scenario, 30 per positivity or triage level, 20 per
 utility cell) with 95\% percentile bootstrap intervals over replicates in
 brackets, the Monte Carlo error of the mean; the coverage of a single
 analyst's patient-level bootstrap for each estimator's own estimand is in
-Appendix~\ref{app:intervals}, and Appendix~\ref{app:information} lists what
+Appendix~\ref{app:intervals}, and Table~\ref{tab:information} (Appendix~\ref{app:information}) lists what
 each estimator and update rule observes.
 
 \begin{figure*}[t]\centering\includegraphics[width=0.8\textwidth]{figures/fig1_attribution.pdf}
@@ -549,7 +550,8 @@ $1.3$ points in S1 to S4; refitting on untreated patients, which needs
 the action log rather than the randomised arm, matches the better of keeping
 and naive refitting in S1 and S3 and beats both in S2 ($+1.7$) and S4
 ($+4.9$). Harm-weighted versions leave the ranking unchanged for harms up to
-$0.2$ events per unnecessary treatment.
+$0.2$ events per unnecessary treatment (Figure~\ref{fig:decision},
+Appendix~\ref{app:decision}).
 
 \paragraph{F5: deployment also moves the patient mix
 (Figure~\ref{fig:triage}, Appendix~\ref{app:sites}).} A triage effect, a
@@ -598,7 +600,7 @@ potential outcomes ($0.814$), because standard care already treats suspicious
 patients: the baseline is not a clean measurement either. Charging each
 unnecessary treatment a harm of $h$ events lowers events averted at adherence
 $0.85$ from $11.50$ to $10.56$ points at $h = 0.1$ and $9.63$ at $h = 0.2$
-(Table~\ref{tab:harm}).
+(Table~\ref{tab:harm}, Appendix~\ref{app:intervals}).
 
 \begin{figure*}[t]\centering
 \IfFileExists{figures/fig7_mimic.pdf}{\includegraphics[width=0.8\textwidth]{figures/fig7_mimic.pdf}}{\fbox{\parbox{0.9\textwidth}{\centering Figure 7 is produced by \texttt{sim2/exp\_E6\_mimic.py} on credentialed MIMIC-IV data.}}}
@@ -636,7 +638,8 @@ arm estimates $-0.00131$ [$-0.00138$, $-0.00124$] (single-run SD $0.0005$
 over about $138{,}000$ post-deployment admissions); the union-graph estimator
 with oracle weights returns $-0.00215$ [$-0.00217$, $-0.00214$] whether the
 action prevents $25\%$,
-$50\%$ or $75\%$ of events (Table~\ref{tab:mimic-sens}), since with no
+$50\%$ or $75\%$ of events (Table~\ref{tab:mimic-sens}, Appendix~\ref{app:mimic}),
+since with no
 treated pre-deployment patient it cannot see the action. Between the periods
 the Brier score rises by $+0.00190$ under historical care; with the alert
 deployed the observed change is $+0.00039$, because the policy contrast,
@@ -722,7 +725,8 @@ calibrated operating point is deliberately strong (an acted-upon alert cuts
 the odds of the event by about 12, $28\%$ of patients are flagged only by the
 alert, the untreated event rate is about $40\%$); magnitudes scale with these
 choices while the direction of the misattribution does not
-(Proposition~\ref{prop:misattr}; Table~\ref{tab:prevalence}; F7). The
+(Proposition~\ref{prop:misattr}; Table~\ref{tab:prevalence} in
+Appendix~\ref{app:robustness}; F7). The
 decomposition is order-dependent in its split of interaction terms, the
 threshold discontinuity identifies only a local effect, and a randomised
 unalerted arm assumes no interference between arms, which shared ward staff,
@@ -926,6 +930,9 @@ naive refitting in S1 and S3 and beats both in S2 and S4.
 
 \input{tables/prevalence_estimators}
 
+
+\section{Persistent-site stepped wedge}
+\label{app:sites}
 \begin{figure*}[t]\centering\includegraphics[width=\textwidth]{figures/fig4_triage.pdf}
 \caption{Deployment-caused covariate shift (triage), 30 independent
 replicates per triage level. Left: attribution to $P(X)$ by the oracle Shapley
@@ -933,9 +940,6 @@ target, the monitor and the proposed $X$ term, for a deployment-only and a
 mixed shift, with 95\% bootstrap bands of the mean. Right: retrospective and
 prospective policy contrasts (oracle) and the randomised-arm estimate with
 95\% bootstrap intervals.}\label{fig:triage}\end{figure*}
-
-\section{Persistent-site stepped wedge}
-\label{app:sites}
 The site-rollout experiment follows 48 sites for six periods. Four cohorts of 12 sites cross
 at periods 2--5; the period-5 cohort supplies not-yet-deployed controls for the
 three earlier crossovers. A fixed site characteristic $z$ shifts the site's
@@ -1038,13 +1042,13 @@ driven by the oracle it also refits in S1.
 
 \input{tables/e1_decision_appendix}
 
+\section{Intervals, coverage and harm}
+\label{app:intervals}
 \begin{figure*}[t]\centering\includegraphics[width=\textwidth]{figures/fig5_utility.pdf}
 \caption{Observed AUROC, events averted, and standard versus counterfactual
 net benefit across clinician adherence and treatment effect $\theta$, S3
 operating point otherwise. Means over 20 independent replicates per cell;
 95\% bootstrap bands of the mean are mostly narrower than the lines.}\label{fig:utility}\end{figure*}
-\section{Intervals, coverage and harm}
-\label{app:intervals}
 The numbers for Experiments A, B, D, E and F in Section~\ref{sec:sim} come
 from a rerun with one seed block per row that stores every replicate
 (\texttt{merged\_expE7.json}); bracketed intervals are 95\% percentile
@@ -1096,6 +1100,11 @@ Everything else, including the outcome under standard care, is observed.
 for the finite pools in expectation over the simulated components; the split
 of the exogenous change into covariate and outcome parts has no ground truth
 in real data and is reported, not scored.
+\emph{Replicates.} Each of the 200 replicates of Experiment A resamples
+admissions with replacement and redraws the simulated components, so the
+intervals reported in F7 are patient-resampling intervals for the finite
+cohort; a nested check of their coverage, as in Appendix~\ref{app:intervals}
+for the synthetic world model, was not run.
 
 \emph{Results.} Table~\ref{tab:mimic} and Figure~\ref{fig:mimic} give the
 main run and Table~\ref{tab:mimic-sens} the sensitivity runs; everything was
