@@ -189,6 +189,9 @@ mechanisms.
 \section{Why the game breaks under deployment feedback}
 \label{sec:break}
 
+The game rests on a condition that \citet{zhang2023attributing} state but do
+not examine, because in their setting every mechanism exists in both periods.
+
 \begin{assumption}[Independent switchability]
 \label{ass:switch}
 For every $S \subseteq \mathcal{M}$, $P_S$ is a well-defined distribution and
@@ -296,7 +299,8 @@ post-deployment value is the decision contrast in the current patient mix.
 exogenous change, both differences of mean losses that need no density ratio;
 the split of the exogenous change into covariate and outcome terms rests on a
 density ratio between periods and is reported as a secondary, less stable
-quantity (on MIMIC-IV its single-run SD is as large as the total, F7). Each
+quantity (on MIMIC-IV its single-run SD is as large as the total;
+Appendix~\ref{app:mimic}). Each
 term carries an uncertainty interval; the output is a decomposition, not a
 categorical label.
 
@@ -360,7 +364,7 @@ against exogenous covariate shift. Under random rollout order the
 retrospective bias is $-0.2\%$ and $-0.7\%$; with rollout linked to a site
 characteristic that also sets baseline risk it is $-10.5\%$ under common
 covariate trends: parallel trends must hold for the loss, not only for the
-covariates. $^\dagger$Trends in the loss, not only in the covariates, parallel.}
+covariates$^\dagger$.}
 \label{tab:identification}
 \resizebox{\columnwidth}{!}{%
 \begin{tabular}{lccc}
@@ -384,7 +388,8 @@ deployed model $f$ is a fixed logistic score $\rhat$ along direction $w_r$;
 clinical suspicion $s(X)$ is a linear index at angle $\phi$ to $w_r$, so the
 model flags patients the clinician misses. Standard care $\pi_0$ treats
 suspicious patients ($s > \tau_s$) with probability $0.8$ and all others with
-probability $\varepsilon$; the alert policy $\pi_1$ treats $\rhat > \tau_r$
+probability $\varepsilon$; the alert policy $\pi_1$ keeps standard care's
+treatment of suspicious patients and in addition treats $\rhat > \tau_r$
 with probability $0.85$. The \emph{alert-only region} ($\rhat > \tau_r$,
 $s \le \tau_s$) holds $28\%$ of patients: it is where the model has clinical
 value and where $\pi_1 / \pi_0 = 0.85 / \varepsilon$. Outcomes are Bernoulli
@@ -425,9 +430,10 @@ policy-contrast estimand coincide under S3 ($+0.0269$ vs.\ $+0.0269$) and
 differ under S4 ($+0.0351$ vs.\ $+0.0431$; Monte Carlo SEs below $10^{-4}$).
 The marginal contributions of the policy player to $\emptyset$, $\{X\}$,
 $\{Y\}$ and $\{X, Y\}$ are $+0.0269$, $+0.0431$, $+0.0273$ and $+0.0431$;
-the difference between their average and the last is the interaction
-$I(X, \pi) = +0.0162$, which Shapley symmetry halves ($I(\pi, Y) = +0.0004$): the exogenous mix shift pushes more patients above the alert
-threshold, so the policy does more work in the shifted population, which is
+the last exceeds their average by $+0.0080$, half of the interaction
+$I(X, \pi) = +0.0162$ that Shapley symmetry splits between the two players
+($I(\pi, Y) = +0.0004$): the exogenous mix shift pushes more patients above
+the alert threshold, so the policy does more work in the shifted population, which is
 the population in which the keep-or-retrain decision is taken. The
 policy-contrast estimand conditions on it; the symmetric share does not
 (Appendix~\ref{app:robustness}).
