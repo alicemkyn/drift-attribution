@@ -8,7 +8,7 @@ aaai/figures/
 aaai/references.bib
 requirements.txt
 aaai/tables/
-docs/JOSH_E1_E7_NOTES.md
+docs/E1_E7_NOTES.md
 docs/E6_MIMIC.md
 docs/SYNTHETIC_HOSPITAL_ASSESSMENT.md
 docs/NEXT_STEPS.md
@@ -92,4 +92,4 @@ sim2/make_tables.py
 sim2/make_tables_e7.py
 sim2/merged.py
 sim2/run_e6.sh
-sim2/validate_josh_results.py
+sim2/validate_results.py

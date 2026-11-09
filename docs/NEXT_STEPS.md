@@ -1,12 +1,12 @@
 # Next steps (handoff)
 
 State: E1 to E5 and E7 are done and were checked against the manuscript in a
-second pass; the corrections are listed in `docs/JOSH_E1_E7_NOTES.md`. E6 was
+second pass; the corrections are listed in `docs/E1_E7_NOTES.md`. E6 was
 run on MIMIC-IV v3.1 (`sim2/run_e6.sh`, on the machine that holds the data)
 on 28 October 2026 and rerun on 3 November with the corrected ward
 definition and whole-pool refits; F7, the E6 appendix and the last row of
 Table `tab:prevalence` report it, and the validator, which now checks every
-MIMIC-IV number in the text, passes with the E6 check active. Read `docs/JOSH_E1_E7_NOTES.md` first; `docs/E6_MIMIC.md` describes
+MIMIC-IV number in the text, passes with the E6 check active. Read `docs/E1_E7_NOTES.md` first; `docs/E6_MIMIC.md` describes
 the E6 design and results.
 
 ## 1. Run E6 on credentialed MIMIC-IV (required; closes task E6)
@@ -139,7 +139,7 @@ by the report step are committed; `data/` stays untracked.
   point and falls at realistic event rates, where the monitor books the
   improvement to the outcome mechanism. The low-prevalence run (6.6%, alert
   rate 20%) shows F1 and F4 hold with estimators, not only oracle values (see
-  `JOSH_E1_E7_NOTES.md`). MIMIC-IV settles the empirical side: at its 0.85%
+  `E1_E7_NOTES.md`). MIMIC-IV settles the empirical side: at its 0.85%
   event rate the deployment lowers the Brier score (-0.0013) while AUROC falls
   (0.747 to 0.702) and the score over-predicts (O/E 1.04 to 0.87), and with
   real drift the alert's benefit hides 77% of a real Brier deterioration

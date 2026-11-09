@@ -149,7 +149,7 @@ report() {
   "$PY" sim2/make_tables.py
   "$PY" sim2/e6_report.py
   say "validator (fails on the open F7 TODO until the manuscript is updated with the numbers above)"
-  "$PY" sim2/validate_josh_results.py || true
+  "$PY" sim2/validate_results.py || true
   say "next: sim2/run_e6.sh publish commits and pushes the aggregate files only"
   echo "data/ (cohort, logs, demo) is ignored by git and stays on this machine."
 }

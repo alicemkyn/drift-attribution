@@ -68,7 +68,7 @@ python3 -m venv .venv && .venv/bin/python -m pip install -r requirements-e6.txt
 .venv/bin/python sim2/exp_E6_mimic.py --cohort data/e6_cohort.npz --tag rrr25 --rrr 0.25   # sensitivity runs
 .venv/bin/python sim2/check_performance_drop.py                                   # MIMIC-IV part of performance_drop.json
 .venv/bin/python sim2/make_figures2.py && .venv/bin/python sim2/make_tables.py
-.venv/bin/python sim2/e6_report.py && .venv/bin/python sim2/validate_josh_results.py
+.venv/bin/python sim2/e6_report.py && .venv/bin/python sim2/validate_results.py
 ```
 
 ## Cohort

@@ -1,6 +1,6 @@
 """Check the saved E1-E7 evidence, mirrored files, generated tables and quoted numbers.
 
-    python3 sim2/validate_josh_results.py
+    python3 sim2/validate_results.py
 
 Every check reads files in figures/, aaai/figures/, aaai/tables/ and the
 manuscript; nothing is recomputed from scratch except the generated tables,
