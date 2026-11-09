@@ -1,0 +1,125 @@
+{
+ "design": "Site-cluster bootstrap: sites resampled with replacement within each rollout cohort, B resamples per realisation; coverage of the 95% percentile interval for the realisation's own simulator truth, averaged over independent seeds. Estimators and DGP are those of exp_G2_sites.py.",
+ "parameters": {
+  "seeds_per_row": 100,
+  "B": 300,
+  "sites": 48,
+  "n_per_site_period": 400,
+  "triage": 0.25,
+  "root_seed": 2026092905
+ },
+ "rows": [
+  {
+   "rollout": "random_order_common_trend",
+   "rho": 0.0,
+   "trend": 0.0,
+   "seeds": 100,
+   "B": 300,
+   "retro": {
+    "coverage": 0.98,
+    "mean_width": 0.019572221342661324,
+    "across_seed_sd_of_estimate": 0.005652449930141107,
+    "mean_bootstrap_sd": 0.004992913607821767,
+    "relative_bias": -0.0021762340468105875
+   },
+   "x_endogenous_loss_did": {
+    "coverage": 1.0,
+    "mean_width": 0.01622041517628846,
+    "across_seed_sd_of_estimate": 0.004315182737082337,
+    "mean_bootstrap_sd": 0.0041378610143593016,
+    "relative_bias": -0.006762641586803645
+   },
+   "x_exogenous_loss_did": {
+    "coverage": 0.93,
+    "mean_width": 0.007537290975200764,
+    "across_seed_sd_of_estimate": 0.001968791267942113,
+    "mean_bootstrap_sd": 0.001922778310000195,
+    "relative_bias": -0.004439243888800002
+   }
+  },
+  {
+   "rollout": "random_order_site_trend",
+   "rho": 0.0,
+   "trend": 0.04,
+   "seeds": 100,
+   "B": 300,
+   "retro": {
+    "coverage": 0.99,
+    "mean_width": 0.02181986265516817,
+    "across_seed_sd_of_estimate": 0.0056191253569437445,
+    "mean_bootstrap_sd": 0.005566291493665349,
+    "relative_bias": -0.011782839909097053
+   },
+   "x_endogenous_loss_did": {
+    "coverage": 1.0,
+    "mean_width": 0.016923825133318436,
+    "across_seed_sd_of_estimate": 0.004932977549799191,
+    "mean_bootstrap_sd": 0.004317302329928173,
+    "relative_bias": -0.01678970785469883
+   },
+   "x_exogenous_loss_did": {
+    "coverage": 0.87,
+    "mean_width": 0.007810182604462479,
+    "across_seed_sd_of_estimate": 0.0023591378171761842,
+    "mean_bootstrap_sd": 0.0019923935215465506,
+    "relative_bias": 0.025947904931302525
+   }
+  },
+  {
+   "rollout": "correlated_order_common_trend",
+   "rho": 0.85,
+   "trend": 0.0,
+   "seeds": 100,
+   "B": 300,
+   "retro": {
+    "coverage": 0.82,
+    "mean_width": 0.017985102039340336,
+    "across_seed_sd_of_estimate": 0.0061893424339994315,
+    "mean_bootstrap_sd": 0.004588036234525596,
+    "relative_bias": -0.10439980306113725
+   },
+   "x_endogenous_loss_did": {
+    "coverage": 0.64,
+    "mean_width": 0.012643708910372838,
+    "across_seed_sd_of_estimate": 0.005102287246968327,
+    "mean_bootstrap_sd": 0.0032254359465236832,
+    "relative_bias": -0.3822766898723302
+   },
+   "x_exogenous_loss_did": {
+    "coverage": 0.13,
+    "mean_width": 0.005916233907402041,
+    "across_seed_sd_of_estimate": 0.001430616840130916,
+    "mean_bootstrap_sd": 0.0015092433437250104,
+    "relative_bias": 0.800543938143752
+   }
+  },
+  {
+   "rollout": "correlated_order_site_trend",
+   "rho": 0.85,
+   "trend": 0.04,
+   "seeds": 100,
+   "B": 300,
+   "retro": {
+    "coverage": 0.96,
+    "mean_width": 0.019693867618741787,
+    "across_seed_sd_of_estimate": 0.005920517281387734,
+    "mean_bootstrap_sd": 0.005023945821107599,
+    "relative_bias": -0.05951374426436899
+   },
+   "x_endogenous_loss_did": {
+    "coverage": 0.93,
+    "mean_width": 0.01378408953280444,
+    "across_seed_sd_of_estimate": 0.005124461264176774,
+    "mean_bootstrap_sd": 0.003516349370613378,
+    "relative_bias": -0.23991071161146563
+   },
+   "x_exogenous_loss_did": {
+    "coverage": 0.56,
+    "mean_width": 0.005805409832558958,
+    "across_seed_sd_of_estimate": 0.0016886875444719184,
+    "mean_bootstrap_sd": 0.0014809718960609587,
+    "relative_bias": 0.5801225130571673
+   }
+  }
+ ]
+}
