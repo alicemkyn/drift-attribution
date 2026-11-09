@@ -220,10 +220,7 @@ in $\rhat$, and the union graph of both environments does not rescue the game:
 the failure is positivity, not graph coverage. The counterfactual ``only the
 policy changed'' asks how the pre-deployment outcome mechanism would have
 responded to actions standard care never took, and no pre-deployment sample
-answers it. Performativity enters a second time when the attribution is acted
-on: an update $f \to f'$ alerts other patients, moves the treated set and with
-it $P(Y \mid X)$, and makes the next period's attribution a different game
-(F3).
+answers it.
 
 \begin{proposition}[Marginal attribution misattributes performative success]
 \label{prop:misattr}
@@ -268,7 +265,7 @@ difference is $\Delta R$. The policy term fixes the population
 (post-deployment patients at their prediction times), the strategies ($\pi_1$
 against $\pi_0$), the outcome and horizon, and the summary (a difference in
 expected loss, or in policy value for the decision endpoint). When deployment
-also moves the patient mix (F5) the population becomes part of the strategy:
+also moves the patient mix the population becomes part of the strategy:
 the prospective contrast keeps the post-deployment population, the
 retrospective contrast undoes deployment and compares $R_{e_1}(f; \pi_1)$ with
 the risk of $f$ in the population standard care would have seen.
@@ -329,10 +326,9 @@ treatment decision and standard care's response probabilities are known; a
 randomised unalerted arm identifies it by design.
 
 \paragraph{Logging requirements.} Risk score, alert exposure, acknowledgement,
-action, timing and outcome for every patient; the assignment for a randomised
-arm; site identities and rollout dates for a site design; and, for the
-weighted refit of F3, the clinicians' response probabilities or enough to
-model them (Appendix~\ref{app:retrain}).
+action, timing and outcome per patient; arm assignment; site identities and
+rollout dates; and, for the weighted refit of Section~\ref{sec:sim}, the
+clinicians' response probabilities (Appendix~\ref{app:retrain}).
 
 \paragraph{Sources of identifying variation, strongest first.}
 (1) Patient-level randomisation of the alert, an unalerted holdout arm,
@@ -346,9 +342,10 @@ if trends in the loss, not merely in the covariates, are parallel
 \citet{gallo2024effectiveness} use to evaluate a deployed alert, identifies
 the local intention-to-treat effect at $\rhat = \tau$; Proposition~\ref{prop:rd}
 (Appendix~\ref{app:rd}) shows that the policy term does not follow without a
-restriction on the effect curve above the threshold, and in our simulation,
-where the curve is hump-shaped, extrapolating the jump overstates it by
-$71\%$.
+restriction on the effect curve above the threshold; in our simulation,
+where the curve is hump-shaped, extrapolating the jump overstates the
+Brier-scale policy term by $71\%$ (and the average event-rate effect among
+alerted patients by $14\%$; Appendix~\ref{app:rd}).
 (4) Practice variation as an instrument for $\Delta_\pi$: not studied here.
 
 \begin{table}[t]
@@ -360,7 +357,8 @@ against exogenous covariate shift. Under random rollout order the
 retrospective bias is $-0.2\%$ and $-0.7\%$; with rollout linked to a site
 characteristic that also sets baseline risk it is $-10.5\%$ under common
 covariate trends: parallel trends must hold for the loss, not only for the
-covariates$^\dagger$.}
+covariates$^\dagger$. $^\ddagger$Each design is assessed alone; a randomised
+unalerted arm nested within the wedge adds the prospective contrast.}
 \label{tab:identification}
 \resizebox{\columnwidth}{!}{%
 \begin{tabular}{lccc}
@@ -369,7 +367,7 @@ Design & $X$ split & Prosp. & Retrosp.\\
 \midrule
 Observational pre/post & No & No & No\\
 Patient-level randomised arm & No & Yes & No\\
-Stepped wedge, random order & Yes & No & Yes\\
+Stepped wedge, random order & Yes & No$^\ddagger$ & Yes\\
 Staggered non-random rollout & Parallel loss trends$^\dagger$ & No & Parallel loss trends$^\dagger$\\
 \bottomrule
 \end{tabular}}
@@ -534,7 +532,9 @@ form (F7).
 \paragraph{F4: attribution-guided refitting (Table~\ref{tab:decision}).}
 After the monitoring window of each scenario a rule keeps or naively refits
 the score, and we count events in the next window (200 independent replicates
-per scenario). Always refitting loses $11.5$ points in S3 and S4. Refitting
+per scenario). The rules are illustrative thresholds fixed before the runs,
+not optimised on the outcomes; driven by the oracle decomposition they behave
+the same way (Appendix~\ref{app:decision}). Always refitting loses $11.5$ points in S3 and S4. Refitting
 when the proposed decomposition assigns more than half of the change to
 exogenous mechanisms never refits in S3, keeps the gain of refitting in S2
 ($16.8$ against $12.6$ points) and refits in $8\%$ of S4 replicates, but also
