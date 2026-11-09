@@ -81,8 +81,9 @@ Monitoring data show the first but cannot separate the second from the third. Af
 the observed AUROC falls and the score over-predicts at every event rate we
 study, in simulation and on MIMIC-IV ward admissions (F7), while the Brier
 score, the metric the attribution game decomposes, rises at high event rates
-and falls at realistic ones (Appendix~\ref{app:robustness}); the
-misattribution we study does not depend on that sign.
+and falls at realistic ones ($+0.019$ at a $40\%$ event rate, $-0.008$ at
+$14\%$; Table~\ref{tab:prevalence}); the misattribution we study does not
+depend on that sign.
 
 \citet{zhang2023attributing} formulate performance-change attribution as a
 cooperative game whose players are the mechanisms of a causal factorisation,
@@ -358,18 +359,19 @@ against exogenous covariate shift. Under random rollout order the
 retrospective bias is $-0.2\%$ and $-0.7\%$; with rollout linked to a site
 characteristic that also sets baseline risk it is $-10.5\%$ under common
 covariate trends: parallel trends must hold for the loss, not only for the
-covariates.}
+covariates. $^\dagger$Trends in the loss, not only in the covariates, parallel.}
 \label{tab:identification}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lccc}
 \toprule
-Design & $X$ split & Prospective & Retrospective\\
+Design & $X$ split & Prosp. & Retrosp.\\
 \midrule
-Observational pre/post only & No & No & No\\
-Patient-level randomised alert arm & No & Yes & No\\
-Site stepped wedge, random order & Yes & No & Yes\\
-Staggered non-random rollout & Parallel loss trends & No & Parallel loss trends\\
+Observational pre/post & No & No & No\\
+Patient-level randomised arm & No & Yes & No\\
+Stepped wedge, random order & Yes & No & Yes\\
+Staggered non-random rollout & Parallel loss trends$^\dagger$ & No & Parallel loss trends$^\dagger$\\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 %==============================================================================
@@ -420,8 +422,10 @@ line: total change.}\label{fig:attr}\end{figure*}
 coalition values, the symmetric Shapley share of the policy player and the
 policy-contrast estimand coincide under S3 ($+0.0269$ vs.\ $+0.0269$) and
 differ under S4 ($+0.0351$ vs.\ $+0.0431$; Monte Carlo SEs below $10^{-4}$).
-The difference is the interaction $I(X, \pi) = +0.0162$, which Shapley
-symmetry halves ($I(\pi, Y) = +0.0004$): the exogenous mix shift pushes more patients above the alert
+The marginal contributions of the policy player to $\emptyset$, $\{X\}$,
+$\{Y\}$ and $\{X, Y\}$ are $+0.0269$, $+0.0431$, $+0.0273$ and $+0.0431$;
+the difference between their average and the last is the interaction
+$I(X, \pi) = +0.0162$, which Shapley symmetry halves ($I(\pi, Y) = +0.0004$): the exogenous mix shift pushes more patients above the alert
 threshold, so the policy does more work in the shifted population, which is
 the population in which the keep-or-retrain decision is taken. The
 policy-contrast estimand conditions on it; the symmetric share does not
@@ -523,7 +527,8 @@ form (F7).
 
 
 
-\paragraph{F4: attribution-guided refitting (Table~\ref{tab:decision}, Appendix~\ref{app:decision}).}
+\input{tables/e1_decision}
+\paragraph{F4: attribution-guided refitting (Table~\ref{tab:decision}).}
 After the monitoring window of each scenario a rule keeps or naively refits
 the score, and we count events in the next window (200 independent replicates
 per scenario). Always refitting loses $11.5$ points in S3 and S4. Refitting
@@ -1013,7 +1018,6 @@ weighted refit minus keep, $+0.06$ [$-0.04$, $+0.15$] (fixed, misspecified).
 
 \section{Keep-or-refit decisions}
 \label{app:decision}
-\input{tables/e1_decision}
 \begin{figure}[t]\centering\includegraphics[width=\columnwidth]{figures/fig6_decision.pdf}
 \caption{Keep-or-refit rules. Events averted against standard care in the
 window after the decision, by scenario, under the fixed alert threshold (top)
