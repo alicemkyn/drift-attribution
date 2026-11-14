@@ -298,6 +298,12 @@ def check_e6():
     for label, text in text_quotes(d, drop or None).items():
         assert " ".join(text.split()) in flat, f"E6 text ({label}): expected to find {text!r}"
     runs = {name: load(name) for name in tagged}
+    # abstract: share of the between-period deterioration that the policy contrast offsets, main and sensitivity runs
+    shares = [-100 * x["A"]["truth"]["drift_and_deploy"]["pi"] / x["A"]["truth"]["drift_and_deploy"]["exogenous"]
+              for x in (d, *runs.values())]
+    quoted(f"offsets ${shares[0]:.0f}\\%$ of the deterioration under historical care", "abstract (offset share, main run)")
+    if len(runs) == 6:
+        quoted(f"(${min(shares):.0f}\\%$ to ${max(shares):.0f}\\%$ across sensitivity runs)", "abstract (offset share, range)")
 
     def union(dd):
         rows = sorted((r for r in dd["A"]["runs"] if r["scenario"] == "deploy_only"), key=lambda r: r["rep"])
