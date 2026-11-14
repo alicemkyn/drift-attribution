@@ -503,8 +503,8 @@ in all six settings ($9.50$ [$9.40$, $9.59$] misspecified, fixed threshold).
 Every action-log correction assumes the logged covariates capture the
 treatment decision. The loss scales with the events the action prevents
 (F7). \emph{Implication:} once a model is acted on, post-deployment outcomes
-no longer label the risk it was built to predict; a refit needs the action
-log, not more data.
+no longer label the risk it was built to predict; a refit must account for
+who was treated, and more data does not help.
 
 
 
@@ -622,7 +622,7 @@ form of the cycle of F3, and observed AUROC is lowest for the two rules
 that avert the most (Appendix~\ref{app:mimic}).
 \emph{Implication:} at ward-level event rates the failure is the quiet one,
 a nearly stable Brier score over a deteriorating outcome mechanism, and
-without the randomised arm nothing in the data separates the two.
+without the randomised arm nothing in routine data separates the two.
 
 \paragraph{What the findings add up to.} Four conclusions follow for a team
 that monitors a deployed model. First, a performance change after deployment
@@ -630,10 +630,10 @@ cannot be read as drift: the model's own effect enters the monitored loss
 with either sign (F1, F7), and neither more data nor a narrower interval
 reveals it (F2). Second, action logs and a randomised unalerted arm are
 monitoring infrastructure, not research extras: the arm identifies the policy
-contrast by design, and every refit that kept the benefit needed the log
-(F3). Third, the keep-or-refit decision should follow the outcome-mechanism
-term net of the policy contrast; the attribution without logs triggers a
-refit that removes the benefit, and observed AUROC is highest where fewest
+contrast by design, and the only refit that kept the benefit in every
+setting needed the log (F3). Third, in these scenarios a keep-or-refit rule that follows the
+outcome-mechanism term of the proposed decomposition avoids the loss; the
+attribution without logs triggers a refit that removes the benefit, and observed AUROC is highest where fewest
 events are averted (F3, F4, F6). Fourth, the arm settles that decision but
 not the cause of a change in case mix, which needs a randomised rollout (F5).
 Magnitudes are specific to the simulator and to one semi-synthetic cohort
