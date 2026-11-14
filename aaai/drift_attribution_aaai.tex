@@ -458,8 +458,7 @@ while an analyst's bootstrap interval narrows from [$-0.0102$, $-0.0077$] to
 [$-0.0091$, $-0.0085$] and excludes the target in every replicate. Effective
 sample size is not monotone in $\varepsilon$ and is highest where the
 estimate is wrong: it measures the variance regime, not identifiability.
-Clipping bias is confined to $\varepsilon \in [10^{-4}, 10^{-3}]$. The
-proposed decomposition recovers its estimand at every $\varepsilon$, with
+The proposed decomposition recovers its estimand at every $\varepsilon$, with
 analyst-interval coverage between $93\%$ and $100\%$.
 
 \begin{figure*}[t]\centering\includegraphics[width=\textwidth]{figures/fig3_retrain.pdf}
@@ -568,8 +567,8 @@ randomised arm identifies, is $+0.080$ at $\theta = 2.5$ for every adherence,
 positive where standard decision-curve analysis is negative. The
 pre-deployment AUROC ($0.745$) is itself below the AUROC against untreated
 potential outcomes ($0.814$), because standard care already treats suspicious
-patients: the baseline is not a clean measurement either. Harm from
-unnecessary treatment is in Table~\ref{tab:harm}.
+patients: the baseline is not a clean measurement either
+(harm from unnecessary treatment: Table~\ref{tab:harm}).
 
 \begin{figure*}[t]\centering
 \IfFileExists{figures/fig7_mimic.pdf}{\includegraphics[width=0.92\textwidth]{figures/fig7_mimic.pdf}}{\fbox{\parbox{0.9\textwidth}{\centering Figure 7 is produced by \texttt{sim2/exp\_E6\_mimic.py} on credentialed MIMIC-IV data.}}}
@@ -624,17 +623,17 @@ that avert the most (Appendix~\ref{app:mimic}).
 a nearly stable Brier score over a deteriorating outcome mechanism, and
 without the randomised arm nothing in routine data separates the two.
 
-\paragraph{What the findings add up to.} Four conclusions follow for a team
-that monitors a deployed model. First, a performance change after deployment
+\paragraph{What the findings add up to.} For a team that monitors a deployed
+model, four conclusions follow. First, a performance change after deployment
 cannot be read as drift: the model's own effect enters the monitored loss
 with either sign (F1, F7), and neither more data nor a narrower interval
 reveals it (F2). Second, action logs and a randomised unalerted arm are
-monitoring infrastructure, not research extras: the arm identifies the policy
+monitoring infrastructure: the arm identifies the policy
 contrast by design, and the only refit that kept the benefit in every
 setting needed the log (F3). Third, in these scenarios a keep-or-refit rule that follows the
-outcome-mechanism term of the proposed decomposition avoids the loss; the
-attribution without logs triggers a refit that removes the benefit, and observed AUROC is highest where fewest
-events are averted (F3, F4, F6). Fourth, the arm settles that decision but
+outcome-mechanism term of the proposed decomposition avoids the loss, the
+attribution without logs triggers a refit that removes the benefit, and
+observed AUROC is highest where fewest events are averted (F3, F4, F6). Fourth, the arm settles that decision but
 not the cause of a change in case mix, which needs a randomised rollout (F5).
 Magnitudes are specific to the simulator and to one semi-synthetic cohort
 (Section~\ref{sec:responsible}).
@@ -884,7 +883,7 @@ second value shown.}\label{fig:rd}\end{figure*}
 
 \section{Robustness of Experiments A and B}
 \label{app:robustness}
-\paragraph{Other scenarios.} Under S1 and S2 all estimators agree with
+\paragraph{Other scenarios and clipping.} Clipping bias is confined to $\varepsilon \in [10^{-4}, 10^{-3}]$. Under S1 and S2 all estimators agree with
 their targets; under S4 the
 randomised-arm estimate ($+0.0343 / -0.0025 / +0.0433$ for $X / Y / \pi$)
 matches the target ($+0.0345 / -0.0024 / +0.0431$).
