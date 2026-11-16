@@ -1,8 +1,9 @@
 README.md
+LICENSE
 .gitignore
 MANIFEST.txt
-aaai/aaai2026.bst
-aaai/aaai2026.sty
+aaai/aaai2027.bst
+aaai/aaai2027.sty
 aaai/drift_attribution_aaai.tex
 aaai/figures/
 aaai/references.bib
@@ -18,6 +19,7 @@ figures/exp1_results.json
 figures/exp2_results.json
 figures/exp3_sweep.json
 figures/exp4_rd.json
+figures/fig0_framework.pdf
 figures/fig1_attribution.pdf
 figures/fig2_positivity.pdf
 figures/fig3_retrain.pdf
@@ -84,6 +86,7 @@ sim2/exp_F_triage.py
 sim2/exp_G2_sites.py
 sim2/exp_H_correction.py
 sim2/exp_prevalence.py
+sim2/make_figure0_framework.py
 sim2/make_figure3_E3.py
 sim2/make_figure_E1.py
 sim2/make_figures2.py
